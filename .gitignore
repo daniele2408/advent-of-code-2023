@@ -1,0 +1,22 @@
+# Haskell-specific
+dist
+cabal-dev/
+*.hi
+*.o
+*.o.d
+*.prof
+*.aux
+*.hp
+*.eventlog
+
+# Stack-specific
+.stack-work/
+
+# IntelliJ-specific
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+/dist-newstyle/
+/resources/
