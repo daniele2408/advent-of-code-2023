@@ -63,14 +63,12 @@ testsDay2 = TestList [
     TestLabel "" (TestCase(assertEqual "Test day 2" (CubeGame 10 2 3) (mergeGameSet ["2 green", "3 blue", "3 red", "10 red", "1 green", "3 blue"]))),
     TestLabel "test4" test29]
 
-testAnswer1Day2Sample = TestCase(do
+testAnswersDay2Sample = TestCase(do
   inputText <- readFile "./resources/sample/inputday2.txt"
-  assertEqual "" (8) (answerQuestionDayTwo inputText))
-
-testAnswer1Day2 = TestCase(do
-  inputText <- readFile "./resources/inputday2.txt"
-  assertEqual "" (2101) (answerQuestionDayTwo inputText))
-
-testAnswer2Day2 = TestCase(do
-  inputText <- readFile "./resources/inputday2.txt"
+  assertEqual "" (8) (answerQuestionDayTwo inputText)
   assertEqual "" (2286) (answerQuestionDayTwo' inputText))
+
+testAnswersDay2 = TestCase(do
+  inputText <- readFile "./resources/inputday2.txt"
+  assertEqual "" (2101) (answerQuestionDayTwo inputText)
+  assertEqual "" (58269) (answerQuestionDayTwo' inputText))
