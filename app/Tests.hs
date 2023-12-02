@@ -2,6 +2,7 @@ module Tests where
 
 import Test.HUnit
 import Funcs
+import FuncsDay2
 
 test1 = TestCase(assertEqual "" (72) (extractFirstAndLastNumber "7fjqhrhsevenlbtwoninevnmct2"))
 test2 = TestCase(assertEqual "" (95) (extractFirstAndLastNumber "gmlqzxdxtt9five"))
@@ -28,3 +29,45 @@ testsDay1 = TestList [
 testAnswers = TestList [TestLabel "a1d1" testAnswer1Day1, TestLabel "a2d1" testAnswer2Day1]
 
 -- HOW TO: run 'cabal repl' ':l app/Tests.hs' 'runTestTT <variableTestList>'
+
+test21 = TestCase(assertEqual "Test day 2" (["ciao", "sono"]) (splitStringBy "," "ciao, sono"))
+test211 = TestCase(assertEqual "Test day 2" ("ciao") (stripWhiteSpaces " ciao "))
+test212 = TestCase(assertEqual "Test day 2" ("ciao") (stripWhiteSpaces "ciao "))
+test213 = TestCase(assertEqual "Test day 2" ("ciao") (stripWhiteSpaces " ciao"))
+test214 = TestCase(assertEqual "Test day 2" ("ciao") (stripWhiteSpaces "ciao"))
+test22 = TestCase(assertEqual "Test day 2" (CubeGame 3 0 0) (addRollToGame emptyCubeGame "3 red"))
+test23 = TestCase(assertEqual "Test day 2" (CubeGame 3 2 0) (addRollToGame (addRollToGame emptyCubeGame "3 red") "2 green"))
+test24 = TestCase(assertEqual "Test day 2" (CubeGame 4 1 3) (parseGame "1 red, 1 green, 3 blue, 3 red"))
+test25 = TestCase(assertEqual "Test day 2" ("abcdef") (parseLineInput "cappello: abcdef"))
+test26 = TestCase(assertEqual "Test day 2" (123) (parseLineGameId "dsads 123: abcdef"))
+test27 = TestCase(assertEqual "Test day 2" (CubeGameWrapped 123 (CubeGame 4 1 3)) (parseIdAndGame "dsads 123: 1 red, 1 green, 3 blue, 3 red"))
+test28 = TestCase(assertEqual "Test day 2" True (isGamePossibleFor emptyCubeGame (CubeGame 1 2 3)))
+test29 = TestCase(assertEqual "Test day 2" False (isGamePossibleFor (CubeGame 3 2 3) (CubeGame 1 2 3)))
+
+testsDay2 = TestList [
+    TestLabel "test1" test21,
+    TestLabel "test11" test211,
+    TestLabel "test12" test212,
+    TestLabel "test13" test213,
+    TestLabel "test14" test214,
+    TestLabel "test2" test22,
+    TestLabel "test3" test23,
+    TestLabel "test4" test24,
+    TestLabel "test4" test25,
+    TestLabel "test4" test26,
+    TestLabel "test4" test27,
+    TestLabel "test4" test28,
+    TestLabel "" (TestCase(assertEqual "Test day 2" False (isPoolLegal (CubeGame 3 2 3) "4 red"))),
+    TestLabel "" (TestCase(assertEqual "Test day 2" True (isPoolLegal (CubeGame 3 2 3) "2 green"))),
+    TestLabel "" (TestCase(assertEqual "Test day 2" True (areGameSetsLegal (CubeGame 3 2 3) "game 123: 2 green, 3 blue, 3 red"))),
+    TestLabel "" (TestCase(assertEqual "Test day 2" False (areGameSetsLegal (CubeGame 3 2 3) "game 123: 0 green, 0 blue, 10 red"))),
+    TestLabel "" (TestCase(assertEqual "Test day 2" False (areGameSetsLegal (CubeGame 3 2 3) "game 123: 2 green, 3 blue, 3 red; 0 green, 0 blue, 10 red"))),
+    TestLabel "test4" test29]
+
+testAnswer1Day2Sample = TestCase(do
+  inputText <- readFile "./resources/sample/inputday2.txt"
+  assertEqual "" (8) (answerQuestionDayTwo inputText))
+
+testAnswer1Day2 = TestCase(do
+  inputText <- readFile "./resources/inputday2.txt"
+  assertEqual "" (2101) (answerQuestionDayTwo inputText))
