@@ -16,6 +16,8 @@ data CubeGame = CubeGame {
   blue :: Int
 } deriving (Eq, Show, Ord)
 
+type GameSet = [String]
+
 -- | The 'emptyCubeGame' function returns an empty instance of CubeGame
 emptyCubeGame :: CubeGame
 emptyCubeGame = CubeGame 0 0 0
@@ -65,7 +67,7 @@ parseLineInput :: String -> String
 parseLineInput l = head $ tail $ splitStringByAndStripWhiteSpaces ":" l
 
 -- | The 'parseLineGameSetInput' function extracts a String content written after a colon
-parseLineGameSetInput :: String -> [String]
+parseLineGameSetInput :: String -> GameSet
 parseLineGameSetInput l = splitStringByAndStripWhiteSpaces ";" l
 
 -- | The parseLineGameId function extracts the integer game id written before the colon
@@ -91,8 +93,8 @@ isPoolLegal cg s
   where parsedCommand = words s
 
 -- | The 'filterGamesBy' function checks if all pools in a list are legal
-arePoolsLegal :: CubeGame -> [String] -> Bool
-arePoolsLegal cg xs = all (\x -> isPoolLegal cg x) xs
+arePoolsLegal :: CubeGame -> GameSet -> Bool
+arePoolsLegal cg gs = all (\x -> isPoolLegal cg x) gs
 
 -- | The 'areGameSetsLegal' breaks down a line in game sets, checking the legality of each one
 areGameSetsLegal :: CubeGame -> String -> Bool
@@ -100,7 +102,7 @@ areGameSetsLegal cg s = all (\xs -> arePoolsLegal cg xs) $ parseGameSets s
 
 -- | The 'parseGameSets' function parses a line in a list of game sets,
 -- where a game set is a list of pools as "1 red", "4 blue", etc...
-parseGameSets :: String -> [[String]]
+parseGameSets :: String -> [GameSet]
 parseGameSets s = map (\x -> splitStringByAndStripWhiteSpaces "," x) $ parseLineGameSetInput $ parseLineInput s
 
 -- | The 'powerCubeGame' function computes the power of a CubeGame
@@ -108,11 +110,11 @@ powerCubeGame :: CubeGame -> Int
 powerCubeGame cg = foldl (\acc x -> acc * x) 1 [(red cg), (green cg), (blue cg)]
 
 -- | The 'findPossibleCubeGameGivenGameSets' function computes for a list of game sets the smallest CubeGame that could be a fit for them
-findPossibleCubeGameGivenGameSets :: [[String]] -> CubeGame
+findPossibleCubeGameGivenGameSets :: [GameSet] -> CubeGame
 findPossibleCubeGameGivenGameSets gss = foldl (\acc x -> mergeCubeGame acc x) emptyCubeGame (map (\gs -> mergeGameSet gs) gss)
 
 -- | The 'mergeGameSet' compute the smallest CubeGame for a game set
-mergeGameSet :: [String] -> CubeGame
+mergeGameSet :: GameSet -> CubeGame
 mergeGameSet xs = foldl (\acc x -> mergeRollToGame acc x) emptyCubeGame xs
 
 answerQuestionDayTwo :: String -> Int
