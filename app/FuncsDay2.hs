@@ -53,7 +53,7 @@ splitStringByAndStripWhiteSpaces sep s = map (\x -> stripWhiteSpaces x) $ splitO
 -- | The 'stripWhiteSpaces' functions strips whitespaces from a string
 stripWhiteSpaces :: String -> String
 stripWhiteSpaces [] = []
-stripWhiteSpaces (x:[]) = x
+stripWhiteSpaces (x:[]) = [x]
 stripWhiteSpaces (x:xs)
   | (&&) ((head $ reverse xs) == ' ') (x == ' ') = reverse $ tail $ reverse xs
   | x == ' ' = xs
