@@ -18,20 +18,30 @@ data CubeGame = CubeGame {
 emptyCubeGame :: CubeGame
 emptyCubeGame = CubeGame 0 0 0
 
-addRollToGame :: CubeGame -> String -> CubeGame
-addRollToGame cg s
-  | parsedCommand !! 1 == "red" = CubeGame {red=(red cg)+(convertStrToInt $ parsedCommand !! 0), green=(green cg), blue=(blue cg)}
-  | parsedCommand !! 1 == "green" = CubeGame {red=(red cg), green=(green cg)+(convertStrToInt $ parsedCommand !! 0), blue=(blue cg)}
-  | parsedCommand !! 1 == "blue" = CubeGame {red=(red cg), green=(green cg), blue=(blue cg)+(convertStrToInt $ parsedCommand !! 0)}
+mergeRollToGame :: CubeGame -> String -> CubeGame
+mergeRollToGame cg s
+  | parsedCommand !! 1 == "red" = mergeRed cg (convertStrToInt $ parsedCommand !! 0)
+  | parsedCommand !! 1 == "green" = mergeGreen cg (convertStrToInt $ parsedCommand !! 0)
+  | parsedCommand !! 1 == "blue" = mergeBlue cg (convertStrToInt $ parsedCommand !! 0)
   | otherwise = cg
   where parsedCommand = words s
 
+mergeRed :: CubeGame -> Int -> CubeGame
+mergeRed cg n = CubeGame {red=max' n (red cg), green=(green cg), blue=(blue cg)}
 
-addRollToGameIterative :: [String] -> CubeGame -> CubeGame
-addRollToGameIterative (x:xs) cg
-  | (x:xs) == [] = cg
-  | otherwise = addRollToGameIterative xs (addRollToGame cg x)
-addRollToGameIterative _ cg = cg
+mergeGreen :: CubeGame -> Int -> CubeGame
+mergeGreen cg n = CubeGame {red=(red cg), green=max' n (green cg), blue=(blue cg)}
+
+mergeBlue :: CubeGame -> Int -> CubeGame
+mergeBlue cg n = CubeGame {red=(red cg), green=(green cg), blue=max' n (blue cg)}
+
+mergeCubeGame :: CubeGame -> CubeGame -> CubeGame
+mergeCubeGame cg cg' = mergeBlue (mergeGreen (mergeRed cg (red cg')) (green cg')) (blue cg')
+
+max' :: Int -> Int -> Int
+max' n n'
+  | n >= n' = n
+  | otherwise = n'
 
 splitStringBy :: String -> String -> [String]
 splitStringBy sep s = map (\x -> stripWhiteSpaces x) $ splitOn sep s
@@ -43,10 +53,6 @@ stripWhiteSpaces (x:xs)
   | (head $ reverse xs) == ' ' = (x: (reverse $ tail $ reverse xs))
   | otherwise = (x:xs)
 
-
-parseGame :: String -> CubeGame
-parseGame s = addRollToGameIterative (splitStringBy "," s) emptyCubeGame
-
 parseLineInput :: String -> String
 parseLineInput l = head $ tail $ splitStringBy ":" l
 
@@ -55,9 +61,6 @@ parseLineGameSetInput l = splitStringBy ";" l
 
 parseLineGameId :: String -> Int
 parseLineGameId l = convertStrToInt $ (\x -> x !! 1) $ words $ head $ splitStringBy ":" l
-
-parseIdAndGame :: String -> CubeGameWrapped
-parseIdAndGame s = CubeGameWrapped (parseLineGameId s) (parseGame $ parseLineInput s)
 
 isGamePossibleFor :: CubeGame -> CubeGame -> Bool
 isGamePossibleFor c c' = c <= c'
@@ -77,7 +80,25 @@ arePoolsLegal :: CubeGame -> [String] -> Bool
 arePoolsLegal cg xs = all (\x -> isPoolLegal cg x) xs
 
 areGameSetsLegal :: CubeGame -> String -> Bool
-areGameSetsLegal cg s = all (\xs -> arePoolsLegal cg xs) (map (\x -> splitStringBy "," x) $ parseLineGameSetInput $ parseLineInput s)
+areGameSetsLegal cg s = all (\xs -> arePoolsLegal cg xs) $ parseGameSets s
+
+parseGameSets :: String -> [[String]]
+parseGameSets s = map (\x -> splitStringBy "," x) $ parseLineGameSetInput $ parseLineInput s
+
+powerCubeGame :: CubeGame -> Int
+powerCubeGame cg = foldl (\acc x -> acc * x) 1 [(red cg), (green cg), (blue cg)]
+
+findPossibleCubeGameGivenGameSets :: [[String]] -> CubeGame
+findPossibleCubeGameGivenGameSets gss = foldl (\acc x -> mergeCubeGame acc x) emptyCubeGame (map (\gs -> mergeGameSet gs) gss)
+
+mergeGameSet :: [String] -> CubeGame
+mergeGameSet xs = foldl (\acc x -> mergeRollToGame acc x) emptyCubeGame xs
 
 answerQuestionDayTwo :: String -> Int
 answerQuestionDayTwo inputText = sum $ map (\x -> parseLineGameId x) $ filter (\l -> areGameSetsLegal (CubeGame 12 13 14) l) $ lines inputText
+
+parseGameSetsFromFile :: String -> [CubeGame]
+parseGameSetsFromFile inputText = map (\gss -> findPossibleCubeGameGivenGameSets gss) $ map (\l -> parseGameSets l) $ lines inputText
+
+answerQuestionDayTwo' :: String -> Int
+answerQuestionDayTwo' inputText = foldr (\acc x -> acc + x) 0 $ map (\cg -> powerCubeGame cg) $ parseGameSetsFromFile inputText
