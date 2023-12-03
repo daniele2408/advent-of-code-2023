@@ -99,4 +99,5 @@ testsDay3 = TestList [
 
 sampleDay3 = TestCase(do
   inputText <- readFile "./resources/sample/inputday3.txt"
-  assertEqual "" (4361) (answerQuestionDayThree inputText))
+  assertEqual "" (4361) (answerQuestionDayThree inputText)
+  assertEqual "" (467835) (answerQuestionDayThree' inputText))

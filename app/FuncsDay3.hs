@@ -59,6 +59,20 @@ isPartNumber si sis
   | not $ isNumberItem si = False
   | otherwise = any (\si' -> si `isItemNextTo` si') $ filter (\si' -> si' /= si) sis
 
+isGearSymbol :: SchemaItem -> [SchemaItem] -> Bool
+isGearSymbol si sis
+  | not $ isNumberItem si = (&&) ((symbolValue si) == "*") ((length $ take 2 $ filter (\si' -> si' `isItemNextTo` si) sis) == 2)
+  | otherwise = False
+
+getAdjacentNumbersGearRatio :: SchemaItem -> Int -> [SchemaItem] -> Int
+getAdjacentNumbersGearRatio si n sis
+  | (length adjNumbers) /= 2 = 0
+  | otherwise = (adjNumbers !! 0) * (adjNumbers !! 1)
+  where adjNumbers = take n $ map (\si' -> numberValue si') $ filter (\si' -> si' `isItemNextTo` si) $ filter (\si' -> isNumberItem si') sis
+
+collectAdjacentGearRatios :: [SchemaItem] -> [Int]
+collectAdjacentGearRatios sis = map (\gear -> getAdjacentNumbersGearRatio gear 2 sis) $ filter (\si -> isGearSymbol si sis) sis
+
 isNumberItem :: SchemaItem -> Bool
 isNumberItem (NumberItem _ _) = True
 isNumberItem _ = False
@@ -119,3 +133,6 @@ takeWhileIsDigit s = takeWhile (\x -> isDigit x) s
 
 answerQuestionDayThree :: String -> Int
 answerQuestionDayThree inputText = sum $ map (\si -> (numberValue si)) $ filterPartNumbers $ parseSchema $ generateSchemaFromInput inputText
+
+answerQuestionDayThree' :: String -> Int
+answerQuestionDayThree' inputText = sum $ collectAdjacentGearRatios $ parseSchema $ generateSchemaFromInput inputText
