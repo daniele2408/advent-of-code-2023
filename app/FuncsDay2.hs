@@ -3,6 +3,7 @@ module FuncsDay2 where
 import Text.Show.Functions
 import Data.List.Split
 import Funcs
+import CommonFuncs
 
 --
 data CubeGameWrapped = CubeGameWrapped {

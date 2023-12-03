@@ -31,6 +31,6 @@ executable aoc2023
     hs-source-dirs:   app
     default-language: Haskell2010
     exposed-modules: 
-        Tests, Funcs, FuncsDays2
+        Tests, Funcs, FuncsDay2, FuncsDays3, CommonFuncs
     build-depends:
         HUnit

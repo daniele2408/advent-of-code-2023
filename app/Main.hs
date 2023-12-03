@@ -2,6 +2,7 @@ module Main where
 
 import Funcs
 import FuncsDay2
+import FuncsDay3
 
 main :: IO ()
 main = do
@@ -13,3 +14,7 @@ main = do
     inputText2 <- readFile "./resources/inputday2.txt"
     putStrLn $ "The sum of valid games' ids is " ++ (show $ answerQuestionDayTwo inputText2)
     putStrLn $ "The sum of the power of possible games is " ++ (show $ answerQuestionDayTwo' inputText2)
+
+    inputText3 <- readFile "./resources/inputday3.txt"
+    putStrLn $ ">>> " ++ (show $ answerQuestionDayThree inputText3) -- 388433 no
+

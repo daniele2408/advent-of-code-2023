@@ -3,6 +3,7 @@ module Tests where
 import Test.HUnit
 import Funcs
 import FuncsDay2
+import FuncsDay3
 
 test1 = TestCase(assertEqual "" (72) (extractFirstAndLastNumber "7fjqhrhsevenlbtwoninevnmct2"))
 test2 = TestCase(assertEqual "" (95) (extractFirstAndLastNumber "gmlqzxdxtt9five"))
@@ -68,3 +69,34 @@ answersDay2 = TestCase(do
   inputText <- readFile "./resources/inputday2.txt"
   assertEqual "" (2101) (answerQuestionDayTwo inputText)
   assertEqual "" (58269) (answerQuestionDayTwo' inputText))
+
+testTakeWhileIsDigit = TestCase(assertEqual "Test take while char is digit" "123" (takeWhileIsDigit "123*..."))
+testParseSymbolAndNumber = TestCase(assertEqual "Test parse line 123*..." ([SymbolItem "*" (Point 0 3, Point 0 3), NumberItem 123 (Point 0 0, Point 0 2)]) (parseSchemaLine (0, "123*...") [] 0))
+
+testParseSchemas1 = TestCase(assertEqual "" ([
+  NumberItem 32 (Point 0 8, Point 0 9),
+  SymbolItem "#" (Point 0 7, Point 0 7),
+  NumberItem 456 (Point 0 4, Point 0 6),
+  SymbolItem "*" (Point 0 3, Point 0 3),
+  NumberItem 123 (Point 0 0, Point 0 2)]) (parseSchemaLine (0, "123*456#32.") [] 0))
+
+testParseSchemas2 = TestCase(assertEqual "" ([
+  NumberItem 321 (Point 0 8, Point 0 10),
+  SymbolItem "#" (Point 0 7, Point 0 7),
+  NumberItem 456 (Point 0 4, Point 0 6),
+  SymbolItem "*" (Point 0 3, Point 0 3),
+  NumberItem 123 (Point 0 0, Point 0 2)]) (parseSchemaLine (0, "123*456#321") [] 0))
+
+testsDay3 = TestList [
+  TestLabel "test1" (TestCase(assertEqual "Test day 3 1 number" ([NumberItem 467 (Point 0 0, Point 0 2)]) (parseSchemaLine (0, "467.....") [] 0))),
+  TestLabel "test1" (TestCase(assertEqual "Test day 3 1 symbol" ([SymbolItem "*" (Point 0 0, Point 0 0)]) (parseSchemaLine (0, "*...") [] 0))),
+  TestLabel "test1" (TestCase(assertEqual "Test day 3 2" ([NumberItem 467 (Point 0 0, Point 0 2)]) (parseSchemaLine (0, ".") [NumberItem 467 (Point 0 0, Point 0 2)] 10))),
+  TestLabel "test1" (TestCase(assertEqual " Test day 3 3" ([
+    NumberItem {numberValue = 114, coords = (Point {x = 0, y = 5},Point {x = 0, y = 7})},
+    NumberItem {numberValue = 467, coords = (Point {x = 0, y = 0},Point {x = 0, y = 2})}]
+    ) (parseSchema $ generateSchemaFromInput "467..114..")))]
+
+
+sampleDay3 = TestCase(do
+  inputText <- readFile "./resources/sample/inputday3.txt"
+  assertEqual "" (4361) (answerQuestionDayThree inputText))
