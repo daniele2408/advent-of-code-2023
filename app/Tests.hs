@@ -110,6 +110,64 @@ testGetMatches = TestCase(assertEqual "test compute tot matches" [83, 86, 17, 48
 
 testUpdateScratchHolder = TestCase(assertEqual "test scratch holder update" [(2, 4), (1, 1)] (updateScratchCardHolderCopies 2 3 [(1,1), (2, 3)]))
 
+testInitScratchCardHolder = TestCase(
+  assertEqual
+  "test init scratch card holder"
+  [(1,1),(2,1),(3,1)]
+  (initScratchCardHolderFrom [ScratchCard 1 [1] [1], ScratchCard 1 [1] [1], ScratchCard 1 [1] [1]])
+  )
+
+testGenerateUpdateCommands = TestCase(
+  assertEqual
+  "test generate commands"
+  [(24, 3), (25, 3)]
+  (generateUpdateCommands (ScratchCard 23 [1, 2, 3] [11, 2, 3]) 3)
+  )
+
+testGenerateUpdateCommands2 = TestCase(
+  assertEqual
+  "test generate commands"
+  [(13, 2), (14, 2), (15, 2)]
+  (generateUpdateCommands (ScratchCard 12 [1, 2, 3] [1, 2, 3]) 2)
+  )
+
+testApplyUpdateCommands = TestCase(
+   assertEqual
+   "test apply commands"
+   [(3, 3), (2, 8), (1, 2)]
+   (applyUpdateCommands [(1, 1), (2, 3), (3, 4)] [(1, 1), (2, 7), (3, 2)])
+  )
+
+testApplyGenerate = TestCase(
+  assertEqual
+  ""
+  [(5,11),(4,11),(1,10),(2,10),(3,10)]
+  (applyUpdateCommands (generateUpdateCommands (ScratchCard 3 [1, 2, 3] [1, 2, 3]) 1) [(1,10), (2,10), (3,10), (4,10), (5,10)])
+  )
+
+testUpdateCopiesIterative = TestCase(
+  assertEqual
+  "test update copies"
+  [(3,3),(2,2),(1,1)]
+  (updateCopiesIterative [
+      ScratchCard 1 [1, 2, 3] [1, 2, 3],
+      ScratchCard 2 [1, 2, 3] [12, 2, 3],
+      ScratchCard 3 [10, 11] [12, 2, 3]
+    ] (initScratchCardHolderFrom [
+                                       ScratchCard 1 [1, 2, 3] [1, 2, 3],
+                                       ScratchCard 2 [1, 2, 3] [12, 2, 3],
+                                       ScratchCard 3 [10, 11] [12, 2, 3]
+                                     ]))
+  )
+
 sampleDay4 = TestCase(do
     inputText <- readFile "./resources/sample/inputday4.txt"
-    assertEqual "" (13) (answerQuestionDayFour inputText))
+    assertEqual "" (13) (answerQuestionDayFour inputText)
+    assertEqual "" (30) (answerQuestionDayFour' inputText)
+  )
+
+answersDay4 = TestCase(do
+    inputText <- readFile "./resources/inputday4.txt"
+    assertEqual "" (20855) (answerQuestionDayFour inputText)
+    assertEqual "" (5489600) (answerQuestionDayFour' inputText)
+  )

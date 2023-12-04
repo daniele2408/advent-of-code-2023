@@ -24,4 +24,5 @@ main = do
 
     putStrLn $ ">>>>>>>>>>>>>>> DAY 4 <<<<<<<<<<<<<<<"
     inputText4 <- readFile "./resources/inputday4.txt"
-    putStrLn $ ">>> " ++ (show $ answerQuestionDayFour inputText4)
+    putStrLn $ "The scratchcards are worth " ++ (show $ answerQuestionDayFour inputText4) ++ " points."
+    putStrLn $ "I'll end up having " ++ (show $ answerQuestionDayFour' inputText4) ++ " scratchcards."
