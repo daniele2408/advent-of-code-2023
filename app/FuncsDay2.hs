@@ -48,21 +48,6 @@ mergeBlue cg n = CubeGame {red=(red cg), green=(green cg), blue=max n (blue cg)}
 mergeCubeGame :: CubeGame -> CubeGame -> CubeGame
 mergeCubeGame cg cg' = mergeBlue (mergeGreen (mergeRed cg (red cg')) (green cg')) (blue cg')
 
--- | The 'splitStringByAndStripWhiteSpaces' split a string using the designated separator and remove trailing and leading
--- whitespaces
-splitStringByAndStripWhiteSpaces :: String -> String -> [String]
-splitStringByAndStripWhiteSpaces sep s = map (\x -> stripWhiteSpaces x) $ splitOn sep s
-
--- | The 'stripWhiteSpaces' functions strips whitespaces from a string
-stripWhiteSpaces :: String -> String
-stripWhiteSpaces [] = []
-stripWhiteSpaces (x:[]) = [x]
-stripWhiteSpaces (x:xs)
-  | (&&) ((head $ reverse xs) == ' ') (x == ' ') = reverse $ tail $ reverse xs
-  | x == ' ' = xs
-  | (head $ reverse xs) == ' ' = (x: (reverse $ tail $ reverse xs))
-  | otherwise = (x:xs)
-
 -- | The 'parseLineInput' function extracts a String content written after a colon
 parseLineInput :: String -> String
 parseLineInput l = head $ tail $ splitStringByAndStripWhiteSpaces ":" l

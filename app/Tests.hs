@@ -4,6 +4,8 @@ import Test.HUnit
 import Funcs
 import FuncsDay2
 import FuncsDay3
+import FuncsDay4
+import CommonFuncs
 
 test1 = TestCase(assertEqual "" (72) (extractFirstAndLastNumber "7fjqhrhsevenlbtwoninevnmct2"))
 test2 = TestCase(assertEqual "" (95) (extractFirstAndLastNumber "gmlqzxdxtt9five"))
@@ -101,3 +103,13 @@ sampleDay3 = TestCase(do
   inputText <- readFile "./resources/sample/inputday3.txt"
   assertEqual "" (4361) (answerQuestionDayThree inputText)
   assertEqual "" (467835) (answerQuestionDayThree' inputText))
+
+testParseCardFromLine = TestCase(assertEqual "test parse card from line" (ScratchCard 10 [1, 23, 32, 43] [32, 65, 23, 4]) (parseScratchCardFromLine "Card 10:  1 23 32 43 | 32 65 23  4"))
+testComputeCardValue = TestCase(assertEqual "test compute card value" 8 (computeCardValue (ScratchCard 1 [41, 48, 83, 86, 17] [83, 86, 6, 31, 17, 9, 48, 53])))
+testGetMatches = TestCase(assertEqual "test compute tot matches" [83, 86, 17, 48] (getMatchingNumbers (ScratchCard 1 [41, 48, 83, 86, 17] [83, 86, 6, 31, 17, 9, 48, 53])))
+
+testUpdateScratchHolder = TestCase(assertEqual "test scratch holder update" [(2, 4), (1, 1)] (updateScratchCardHolderCopies 2 3 [(1,1), (2, 3)]))
+
+sampleDay4 = TestCase(do
+    inputText <- readFile "./resources/sample/inputday4.txt"
+    assertEqual "" (13) (answerQuestionDayFour inputText))

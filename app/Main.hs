@@ -3,6 +3,7 @@ module Main where
 import Funcs
 import FuncsDay2
 import FuncsDay3
+import FuncsDay4
 
 main :: IO ()
 main = do
@@ -21,3 +22,6 @@ main = do
     putStrLn $ "The sum of all of the part numbers in the engine schematic is " ++ (show $ answerQuestionDayThree inputText3)
     putStrLn $ "The sum of all of the gear ratios in the engine schematic is " ++ (show $ answerQuestionDayThree' inputText3)
 
+    putStrLn $ ">>>>>>>>>>>>>>> DAY 4 <<<<<<<<<<<<<<<"
+    inputText4 <- readFile "./resources/inputday4.txt"
+    putStrLn $ ">>> " ++ (show $ answerQuestionDayFour inputText4)
