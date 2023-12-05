@@ -18,11 +18,13 @@ data Matcher = Matcher {
 rangeToRange :: Int -> RangeNumMap -> Int
 rangeToRange i [] = i
 rangeToRange i (x:xs)
-    | maybeMappedInt /= [] = snd $ head $ maybeMappedInt
+    | isInRange i srcRange = i - (fst srcRange) + (fst trgRange)
     | otherwise = rangeToRange i xs
     where srcRange = fst x
           trgRange = snd x
-          maybeMappedInt = take 1 $ filter (\pair -> (fst pair) == i) $ zip [(fst srcRange)..(snd srcRange)] [(fst trgRange)..(snd trgRange)]
+
+isInRange :: Int -> RangeNum -> Bool
+isInRange i rn = (&&) (i >= (fst rn)) (i <= (snd rn))
 
 createRangeNumMap :: Int -> Int -> Int -> RangeNumMap
 createRangeNumMap source destination step = [((source, (source+step-1)), (destination, (destination+step-1)))]

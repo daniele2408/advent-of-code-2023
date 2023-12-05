@@ -165,6 +165,13 @@ sampleDay4 = TestCase(do
     inputText <- readFile "./resources/sample/inputday4.txt"
     assertEqual "" (13) (answerQuestionDayFour inputText))
 
+
+answersDay4 = TestCase(do
+    inputText <- readFile "./resources/inputday4.txt"
+    assertEqual "" (20855) (answerQuestionDayFour inputText)
+    assertEqual "" (5489600) (answerQuestionDayFour' inputText)
+  )
+
 testSplitInputFileInBlock = TestCase(do
     inputText <- readFile "./resources/sample/inputday5.txt"
     let blockText = parseInputTextInBlocks inputText
@@ -204,12 +211,7 @@ sampleDay5 = TestCase(do
   assertEqual "" (35) (answerQuestionDayFive inputText)
   )
 
-    assertEqual "" (13) (answerQuestionDayFour inputText)
-    assertEqual "" (30) (answerQuestionDayFour' inputText)
-  )
-
-answersDay4 = TestCase(do
-    inputText <- readFile "./resources/inputday4.txt"
-    assertEqual "" (20855) (answerQuestionDayFour inputText)
-    assertEqual "" (5489600) (answerQuestionDayFour' inputText)
+answersDay5 = TestCase(do
+    inputText <- readFile "./resources/inputday5.txt"
+    assertEqual "" (340994526) (answerQuestionDayFour inputText)
   )
