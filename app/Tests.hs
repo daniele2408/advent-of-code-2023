@@ -5,6 +5,7 @@ import Funcs
 import FuncsDay2
 import FuncsDay3
 import FuncsDay4
+import FuncsDay5
 import CommonFuncs
 
 test1 = TestCase(assertEqual "" (72) (extractFirstAndLastNumber "7fjqhrhsevenlbtwoninevnmct2"))
@@ -162,6 +163,47 @@ testUpdateCopiesIterative = TestCase(
 
 sampleDay4 = TestCase(do
     inputText <- readFile "./resources/sample/inputday4.txt"
+    assertEqual "" (13) (answerQuestionDayFour inputText))
+
+testSplitInputFileInBlock = TestCase(do
+    inputText <- readFile "./resources/sample/inputday5.txt"
+    let blockText = parseInputTextInBlocks inputText
+    assertEqual "" 8 (length $ blockText)
+    assertEqual "" "seeds: 79 14 55 13" (head blockText)
+    assertEqual "" "humidity-to-location map:" ((lines $ blockText !! 7) !! 0)
+    )
+
+testParseCategories = TestCase(
+    assertEqual "" (Seed, Soil) (parseCategories "seed-to-soil map:")
+    )
+
+testSplitInputFileInBlock2 = TestCase(do
+    inputText <- readFile "./resources/sample/inputday5.txt"
+    let lastBlockText = lines $ (parseInputTextInBlocks inputText) !! 7
+    assertEqual "" (Matcher Humidity Location [((93,93+4-1), (56,56+4-1)), ((56,56+37-1),(60,60+37-1))] ) (parseMatcherFromStringBlock lastBlockText)
+    )
+
+testRangeToRange = TestCase(do
+    inputText <- readFile "./resources/sample/inputday5.txt"
+    assertEqual "" 1 (rangeToRange 1 [((93,93+4-1), (56,56+4-1)), ((56,56+37-1),(60,60+37-1))])
+    )
+
+testRangeToRange2 = TestCase(
+    assertEqual "" 57 (rangeToRange 94 [((93,93+4-1), (56,56+4-1)), ((56,56+37-1),(60,60+37-1))])
+    )
+
+testSelectMatcherByCategory = TestCase(
+    assertEqual "" (Matcher Light Temperature [((93,93+4-1), (56,56+4-1))]) (selMatcher Light [
+        Matcher Light Temperature [((93,93+4-1), (56,56+4-1))],
+        Matcher Soil Seed [((93,93+4-1), (56,56+4-1))],
+        Matcher Water Light [((93,93+4-1), (56,56+4-1))]
+    ]))
+
+sampleDay5 = TestCase(do
+  inputText <- readFile "./resources/sample/inputday5.txt"
+  assertEqual "" (35) (answerQuestionDayFive inputText)
+  )
+
     assertEqual "" (13) (answerQuestionDayFour inputText)
     assertEqual "" (30) (answerQuestionDayFour' inputText)
   )

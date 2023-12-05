@@ -4,6 +4,7 @@ import Funcs
 import FuncsDay2
 import FuncsDay3
 import FuncsDay4
+import FuncsDay5
 
 main :: IO ()
 main = do
@@ -26,3 +27,8 @@ main = do
     inputText4 <- readFile "./resources/inputday4.txt"
     putStrLn $ "The scratchcards are worth " ++ (show $ answerQuestionDayFour inputText4) ++ " points."
     putStrLn $ "I'll end up having " ++ (show $ answerQuestionDayFour' inputText4) ++ " scratchcards."
+    putStrLn $ ">>> " ++ (show $ answerQuestionDayFour inputText4)
+
+    putStrLn $ ">>>>>>>>>>>>>>> DAY 5 <<<<<<<<<<<<<<<"
+    inputText5 <- readFile "./resources/inputday5.txt"
+    putStrLn $ ">>> " ++ (show $ answerQuestionDayFive inputText5)
