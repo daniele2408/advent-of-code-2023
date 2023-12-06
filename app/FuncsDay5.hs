@@ -70,6 +70,32 @@ parseSeeds :: [String] -> [Int]
 parseSeeds xs = map (\s -> convertStrToInt s) $ words ((splitOn ":" lineSeeds) !! 1)
     where lineSeeds = head xs
 
+findOverlapBetween :: RangeNum -> RangeNum -> RangeNum
+findOverlapBetween rn rn'
+  | end < start' = (1, 0)
+  | end' < start = (1, 0)
+  | otherwise = ((max start start'), (min end end'))
+    where start = fst rn
+          start' = fst rn'
+          end = snd rn
+          end' = snd rn'
+
+parseSeedsRange :: [String] -> [RangeNum]
+parseSeedsRange xs = map (\p -> ((fst p), (fst p) + (snd p) - 1)) $ zip evenPosInts oddPosInts
+    where seeds = parseSeeds xs
+          nSeeds = length seeds
+          evenPosInts = map (\p -> snd p) $ filter (\p -> (mod (fst p) 2) == 0) $ zip [0..(nSeeds-1)] seeds
+          oddPosInts = map (\p -> snd p) $ filter (\p -> (mod (fst p) 2) == 1) $ zip [0..(nSeeds-1)] seeds
+
+runMappingRangeInt :: [Matcher] -> RangeNum -> Int
+runMappingRangeInt ms seedRange = do
+
+    let matcherSeed = selMatcher Seed ms
+    let overlapRanges = filter (\rn -> [(fst rn)..(snd rn)] == []) $ map (\srcRange -> findOverlapBetween seedRange srcRange) $ map (\rm -> fst rm) (rangeMap matcherSeed)
+
+    minimum $ concat $ map (\or -> map (\i -> runMapping ms i) [(fst or)..(snd or)]) overlapRanges
+
+
 runMapping :: [Matcher] -> Int -> Int
 runMapping ms seed = do
     let matcherSeed = selMatcher Seed ms
@@ -92,3 +118,8 @@ parseInputTextInBlocks inputText = splitOn "\n\n" inputText
 answerQuestionDayFive :: String -> Int
 answerQuestionDayFive inputText = minimum $ runMappingOnSeeds (parseMatchersFromInputText $ inputText) seeds
     where seeds = parseSeeds $ parseInputTextInBlocks inputText
+
+answerQuestionDayFive' :: String -> Int
+answerQuestionDayFive' inputText = minimum $ map (\sr -> runMappingRangeInt matchers sr) seedsRange
+    where seedsRange = parseSeedsRange $ parseInputTextInBlocks inputText
+          matchers = parseMatchersFromInputText $ inputText

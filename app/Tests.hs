@@ -209,9 +209,12 @@ testSelectMatcherByCategory = TestCase(
 sampleDay5 = TestCase(do
   inputText <- readFile "./resources/sample/inputday5.txt"
   assertEqual "" (35) (answerQuestionDayFive inputText)
+  assertEqual "" (46) (answerQuestionDayFive' inputText)
+
   )
 
 answersDay5 = TestCase(do
     inputText <- readFile "./resources/inputday5.txt"
-    assertEqual "" (340994526) (answerQuestionDayFour inputText)
+    assertEqual "" (340994526) (answerQuestionDayFive inputText)
+--    assertEqual "" (340994526) (answerQuestionDayFive' inputText)
   )
