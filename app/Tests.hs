@@ -6,6 +6,7 @@ import FuncsDay2
 import FuncsDay3
 import FuncsDay4
 import FuncsDay5
+import FuncsDay6
 import CommonFuncs
 
 test1 = TestCase(assertEqual "" (72) (extractFirstAndLastNumber "7fjqhrhsevenlbtwoninevnmct2"))
@@ -217,4 +218,24 @@ answersDay5 = TestCase(do
     inputText <- readFile "./resources/inputday5.txt"
     assertEqual "" (340994526) (answerQuestionDayFive inputText)
 --    assertEqual "" (340994526) (answerQuestionDayFive' inputText)
+  )
+
+testParseTime = TestCase(do
+    assertEqual "" [10, 21, 23, 56] (parseTimesFromInputText "Time:      10 21 23 56")
+    )
+
+testParseRaceRecords = TestCase(do
+    inputText <- readFile "./resources/sample/inputday6.txt"
+    assertEqual "" [(7, 9), (15, 40), (30, 200)] (parseRaceRecords inputText)
+    )
+
+testParseRaceRecord = TestCase(do
+    inputText <- readFile "./resources/sample/inputday6.txt"
+    assertEqual "" (71530, 940200) (parseRaceRecord inputText)
+    )
+
+sampleDay6 = TestCase(do
+  inputText <- readFile "./resources/sample/inputday6.txt"
+  assertEqual "" (288) (answerQuestionDaySix inputText)
+  assertEqual "" (71503) (answerQuestionDaySix' inputText)
   )

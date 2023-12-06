@@ -5,6 +5,7 @@ import FuncsDay2
 import FuncsDay3
 import FuncsDay4
 import FuncsDay5
+import FuncsDay6
 
 main :: IO ()
 main = do
@@ -32,3 +33,8 @@ main = do
     putStrLn $ ">>>>>>>>>>>>>>> DAY 5 <<<<<<<<<<<<<<<"
     inputText5 <- readFile "./resources/inputday5.txt"
     putStrLn $ ">>> " ++ (show $ answerQuestionDayFive inputText5)
+
+    putStrLn $ ">>>>>>>>>>>>>>> DAY 6 <<<<<<<<<<<<<<<"
+    inputText6 <- readFile "./resources/inputday6.txt"
+    putStrLn $ ">>> " ++ (show $ answerQuestionDaySix inputText6)
+    putStrLn $ ">>> " ++ (show $ answerQuestionDaySix' inputText6)
