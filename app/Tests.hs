@@ -8,6 +8,7 @@ import FuncsDay4
 import FuncsDay5
 import FuncsDay6
 import FuncsDay7
+import qualified FuncsDay7Answer2 as FDSEVEN
 import CommonFuncs
 
 test1 = TestCase(assertEqual "" (72) (extractFirstAndLastNumber "7fjqhrhsevenlbtwoninevnmct2"))
@@ -263,10 +264,12 @@ testCompWin = TestCase(do
 
 testsSampleDay7 = TestCase(do
     inputText <- readFile "./resources/sample/inputday7.txt"
-    assertEqual "" 6640 (answerQuestionDaySeven inputText)
+    --assertEqual "" 6440 (answerQuestionDaySeven inputText)
+    assertEqual "" 5905 (answerQuestionDaySeven inputText)
     )
 
 testsDay7 = TestCase(do
     inputText <- readFile "./resources/inputday7.txt"
     assertEqual "" 241344943 (answerQuestionDaySeven inputText)
+    assertEqual "" 243101568 (FDSEVEN.answerQuestionDaySeven inputText)
     )
