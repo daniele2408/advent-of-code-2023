@@ -91,7 +91,7 @@ runMappingRangeInt :: [Matcher] -> RangeNum -> Int
 runMappingRangeInt ms seedRange = do
 
     let matcherSeed = selMatcher Seed ms
-    let overlapRanges = filter (\rn -> [(fst rn)..(snd rn)] == []) $ map (\srcRange -> findOverlapBetween seedRange srcRange) $ map (\rm -> fst rm) (rangeMap matcherSeed)
+    let overlapRanges = filter (\rn -> [(fst rn)..(snd rn)] /= []) $ map (\srcRange -> findOverlapBetween seedRange srcRange) $ map (\rm -> fst rm) (rangeMap matcherSeed)
 
     minimum $ concat $ map (\or -> map (\i -> runMapping ms i) [(fst or)..(snd or)]) overlapRanges
 

@@ -7,6 +7,7 @@ import FuncsDay3
 import FuncsDay4
 import FuncsDay5
 import FuncsDay6
+import FuncsDay7
 import CommonFuncs
 
 test1 = TestCase(assertEqual "" (72) (extractFirstAndLastNumber "7fjqhrhsevenlbtwoninevnmct2"))
@@ -239,3 +240,33 @@ sampleDay6 = TestCase(do
   assertEqual "" (288) (answerQuestionDaySix inputText)
   assertEqual "" (71503) (answerQuestionDaySix' inputText)
   )
+
+testHandCardParse = TestCase(do
+    assertEqual "" [A, A, J, Q, Q] (parseHandFromString "AAJQQ")
+    assertEqual "" [A, A, J, THREE, Q] (parseHandFromString "AAJ3Q")
+    assertEqual "" [A, FIVE, J, Q, Q] (parseHandFromString "A5JQQ")
+    )
+
+testHandBidParse = TestCase(do
+    assertEqual "" ([A, A, J, Q, Q], 12) (parseHandBidFromString "AAJQQ 12")
+    assertEqual "" ([A, A, J, THREE, Q], 435) (parseHandBidFromString "AAJ3Q 435")
+    )
+
+testParseGame = TestCase(do
+    inputText <- readFile "./resources/sample/inputday7.txt"
+    assertEqual "" [([THREE,TWO,T,THREE,K],765),([T,FIVE,FIVE,J,FIVE],684),([K,K,SIX,SEVEN,SEVEN],28),([K,T,J,J,T],220),([Q,Q,Q,J,A],483)] (parseGame inputText)
+    )
+
+testCompWin = TestCase(do
+    assertEqual "" 10 (computeWinning (2, ([THREE,TWO], 5)))
+    )
+
+testsSampleDay7 = TestCase(do
+    inputText <- readFile "./resources/sample/inputday7.txt"
+    assertEqual "" 6640 (answerQuestionDaySeven inputText)
+    )
+
+testsDay7 = TestCase(do
+    inputText <- readFile "./resources/inputday7.txt"
+    assertEqual "" 241344943 (answerQuestionDaySeven inputText)
+    )
