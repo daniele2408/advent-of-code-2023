@@ -9,6 +9,7 @@ import FuncsDay5
 import FuncsDay6
 import FuncsDay7
 import qualified FuncsDay7Answer2 as FDSEVEN
+import FuncsDay8
 import CommonFuncs
 
 test1 = TestCase(assertEqual "" (72) (extractFirstAndLastNumber "7fjqhrhsevenlbtwoninevnmct2"))
@@ -272,4 +273,31 @@ testsDay7 = TestCase(do
     inputText <- readFile "./resources/inputday7.txt"
     assertEqual "" 241344943 (answerQuestionDaySeven inputText)
     assertEqual "" 243101568 (FDSEVEN.answerQuestionDaySeven inputText)
+    )
+
+testChooseDirection = TestCase(do
+    assertEqual "" "A" (chooseDirection L Junction{ left="A", right="B"})
+    assertEqual "" "B" (chooseDirection R Junction{ left="A", right="B"})
+    )
+
+testNext = TestCase(do
+    assertEqual "" 2 (takeFirstFromSeq (next $ cycle [1,2,3,4]))
+    assertEqual "" 3 (takeFirstFromSeq (next $ next $ cycle [1,2,3]))
+    assertEqual "" 1 (takeFirstFromSeq (next $ next $ next $ cycle [1,2,3]))
+    assertEqual "" 1 (takeFirstFromSeq (next $ cycle [1]))
+    )
+
+testParseJunction = TestCase(do
+    assertEqual "" Junction{ left="AAA", right="BBB" } (parseJunctionFromString "(AAA, BBB)")
+    )
+
+testParseLinkJunction = TestCase(do
+    assertEqual "" LinkJunction{ from = "CCC", to = Junction{ left="AAA", right="BBB" }} (parseLinkJunctionFromLine "CCC = (AAA, BBB)")
+    )
+
+testsSampleDay8 = TestCase(do
+    inputText <- readFile "./resources/sample/inputday8.txt"
+    inputTextBis <- readFile "./resources/sample/inputday8bis.txt"
+    assertEqual "" 2 (answerQuestionDayEight inputText)
+    assertEqual "" 6 (answerQuestionDayEight inputTextBis)
     )

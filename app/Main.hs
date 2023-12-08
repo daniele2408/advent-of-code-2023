@@ -8,6 +8,7 @@ import FuncsDay5
 import FuncsDay6
 import FuncsDay7
 import qualified FuncsDay7Answer2 as FDSEVEN
+import FuncsDay8
 
 main :: IO ()
 main = do
@@ -45,3 +46,7 @@ main = do
     inputText7 <- readFile "./resources/inputday7.txt"
     putStrLn $ ">>> " ++ (show $ answerQuestionDaySeven inputText7)
     putStrLn $ ">>> " ++ (show $ FDSEVEN.answerQuestionDaySeven inputText7)
+
+    putStrLn $ ">>>>>>>>>>>>>>> DAY 8 <<<<<<<<<<<<<<<"
+    inputText8 <- readFile "./resources/inputday8.txt"
+    putStrLn $ ">>> " ++ (show $ answerQuestionDayEight inputText8)

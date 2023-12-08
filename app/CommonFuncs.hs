@@ -37,3 +37,12 @@ stripWhiteSpaces (x:xs)
   | x == ' ' = xs
   | (head $ reverse xs) == ' ' = (x: (reverse $ tail $ reverse xs))
   | otherwise = (x:xs)
+
+stripCharacter :: String -> Char -> String
+stripCharacter [] _ = []
+stripCharacter (x:[]) _ = [x]
+stripCharacter (x:xs) c
+  | (&&) ((head $ reverse xs) == c) (x == c) = reverse $ tail $ reverse xs
+  | x == c = xs
+  | (head $ reverse xs) == c = (x: (reverse $ tail $ reverse xs))
+  | otherwise = (x:xs)
