@@ -50,3 +50,4 @@ main = do
     putStrLn $ ">>>>>>>>>>>>>>> DAY 8 <<<<<<<<<<<<<<<"
     inputText8 <- readFile "./resources/inputday8.txt"
     putStrLn $ ">>> " ++ (show $ answerQuestionDayEight inputText8)
+    putStrLn $ ">>> " ++ (show $ answerQuestionDayEight' inputText8)

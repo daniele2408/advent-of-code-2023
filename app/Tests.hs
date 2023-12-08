@@ -295,9 +295,27 @@ testParseLinkJunction = TestCase(do
     assertEqual "" LinkJunction{ from = "CCC", to = Junction{ left="AAA", right="BBB" }} (parseLinkJunctionFromLine "CCC = (AAA, BBB)")
     )
 
+testSelectGhostJunctions = TestCase(do
+    inputText <- readFile "./resources/inputday8.txt"
+    assertEqual "" 6 (length $ selectGhostStartingJunctions $ parseInstructionFromString $ drop 2 $ lines inputText)
+    )
+
 testsSampleDay8 = TestCase(do
     inputText <- readFile "./resources/sample/inputday8.txt"
     inputTextBis <- readFile "./resources/sample/inputday8bis.txt"
+    inputTextTris <- readFile "./resources/sample/inputday8tris.txt"
     assertEqual "" 2 (answerQuestionDayEight inputText)
     assertEqual "" 6 (answerQuestionDayEight inputTextBis)
+    assertEqual "" 6 (answerQuestionDayEight' inputTextTris)
+    )
+
+testLcmOnList = TestCase(do
+        assertEqual "" 336 (lcmOnList [12, 16, 14])
+    )
+
+testAnswersDay8 = TestCase(do
+    inputText <- readFile "./resources/sample/inputday8.txt"
+    assertEqual "" 15871 (answerQuestionDayEight inputText)
+    assertEqual "" 11283670395017 (answerQuestionDayEight' inputText)
+
     )
