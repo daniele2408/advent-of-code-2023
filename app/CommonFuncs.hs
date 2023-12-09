@@ -11,8 +11,15 @@ isStringAllDigits s = all (isDigit) s
 convertStrToInt :: String -> Int
 convertStrToInt s
     | s == "" = 0
-    | all (isDigit) s = read s :: Int
+    | all (isDigit) unsigned = applySign s
     | otherwise = error "Not a number"
+        where unsigned = stripCharacter s '-'
+
+applySign :: String -> Int
+applySign s
+    | (head s) == '-' = -1 * i
+    | otherwise = i
+    where i = read (stripCharacter s '-') :: Int
 
 -- |The 'retrieveIndexIterative' function returns index position of a substring s in a string (x:xs), or -1 if absent
 retrieveIndexIterative :: String -> String -> Int -> Int
@@ -46,3 +53,13 @@ stripCharacter (x:xs) c
   | x == c = xs
   | (head $ reverse xs) == c = (x: (reverse $ tail $ reverse xs))
   | otherwise = (x:xs)
+
+extractOddPosElements :: [a] -> [a]
+extractOddPosElements [] = []
+extractOddPosElements xs = map (\p -> snd p) $ filter (\p -> (mod (fst p) 2) == 1) $ zip [0..(l-1)] xs
+    where l = length xs
+
+extractEvenPosElements :: [a] -> [a]
+extractEvenPosElements [] = []
+extractEvenPosElements xs = map (\p -> snd p) $ filter (\p -> (mod (fst p) 2) == 0) $ zip [0..(l-1)] xs
+    where l = length xs

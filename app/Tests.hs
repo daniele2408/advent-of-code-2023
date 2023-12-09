@@ -10,6 +10,7 @@ import FuncsDay6
 import FuncsDay7
 import qualified FuncsDay7Answer2 as FDSEVEN
 import FuncsDay8
+import FuncsDay9
 import CommonFuncs
 
 test1 = TestCase(assertEqual "" (72) (extractFirstAndLastNumber "7fjqhrhsevenlbtwoninevnmct2"))
@@ -317,5 +318,23 @@ testAnswersDay8 = TestCase(do
     inputText <- readFile "./resources/sample/inputday8.txt"
     assertEqual "" 15871 (answerQuestionDayEight inputText)
     assertEqual "" 11283670395017 (answerQuestionDayEight' inputText)
+    )
 
+testParseInputSeq = TestCase(do
+    assertEqual "" IntSequence{ elements = [10,23,45], lastElem = -1 } (parseInputSeq "10 23 45")
+    )
+
+testComputeDiffSeq = TestCase(do
+    let seq_ = IntSequence{ elements = [0,3,6,9,12,15], lastElem = -1 }
+    assertEqual "" IntSequence{ elements = [3,3,3,3,3], lastElem = -1 } (computeDiffSeq seq_)
+    )
+
+testSampleAnswersDay9 = TestCase(do
+    inputText <- readFile "./resources/sample/inputday9.txt"
+    assertEqual "" 114 (answerQuestionDayNine inputText)
+    )
+
+testAnswersDay9 = TestCase(do
+    inputText <- readFile "./resources/inputday9.txt"
+    assertEqual "" 1987402313 (answerQuestionDayNine inputText)
     )
