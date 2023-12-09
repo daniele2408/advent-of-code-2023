@@ -12,8 +12,18 @@ data IntSequence = IntSequence {
 type IntSequenceCollection = [IntSequence]
 
 answerQuestionDayNine :: String -> Int
-answerQuestionDayNine inputText = sum $ map (\seq_ -> resolveIntSequence seq_ [seq_]) seqs
+answerQuestionDayNine inputText = sum $ map (\seq_ -> resolveIntSequenceGeneric seq_ [seq_] computeLastElems) seqs
     where seqs = parseInputText inputText
+
+answerQuestionDayNine' :: String -> Int
+answerQuestionDayNine' inputText = sum $ map (\seq_ -> resolveIntSequenceGeneric seq_ [seq_] computeLastElemBackwards) seqs
+    where seqs = parseInputText inputText
+
+resolveIntSequenceGeneric :: IntSequence -> IntSequenceCollection -> (IntSequenceCollection -> Int -> Int) -> Int
+resolveIntSequenceGeneric seq_ acc computeFunc
+    | isSeqAllZero seq_ = computeFunc acc 0
+    | otherwise = resolveIntSequenceGeneric diffSeq (diffSeq:acc) computeFunc
+        where diffSeq = computeDiffSeq seq_
 
 resolveIntSequence :: IntSequence -> IntSequenceCollection -> Int
 resolveIntSequence seq_ acc
@@ -26,6 +36,12 @@ computeLastElems (x:xs) i
     | xs == [] = i
     | otherwise = computeLastElems xs (nextSecondLastElem + i)
         where nextSecondLastElem = last $ elements $ head xs
+
+computeLastElemBackwards :: IntSequenceCollection -> Int -> Int
+computeLastElemBackwards (x:xs) i
+    | xs == [] = i
+    | otherwise = computeLastElemBackwards xs (nextFirstElem - i)
+        where nextFirstElem = head $ elements $ head xs
 
 isSeqAllZero :: IntSequence -> Bool
 isSeqAllZero seq_ = all (\x -> x == 0) $ elements seq_

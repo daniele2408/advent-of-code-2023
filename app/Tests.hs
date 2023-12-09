@@ -337,4 +337,5 @@ testSampleAnswersDay9 = TestCase(do
 testAnswersDay9 = TestCase(do
     inputText <- readFile "./resources/inputday9.txt"
     assertEqual "" 1987402313 (answerQuestionDayNine inputText)
+    assertEqual "" 900 (answerQuestionDayNine' inputText)
     )
