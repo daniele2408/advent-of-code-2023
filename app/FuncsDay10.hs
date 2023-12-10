@@ -32,20 +32,22 @@ findStart tg = head $ take 1 $ filter (\tc -> (fst $ tile tc) == START) $ concat
 followTile :: TileGrid -> TileCell -> TileCell -> TileCell -> Int -> Int
 followTile gc currentTile previousTile target steps
     | nextTile == target = steps
-    | otherwise = trace ((show currentTile) ++ " ---> " ++ (show nextTile) ++ " steps: " ++ (show steps)) followTile gc nextTile currentTile target (steps+1)
+    | otherwise = followTile gc nextTile currentTile target (steps+1)
     where nextTile = head $ filter (\ct -> ct /= previousTile) $ getConnectedTiles gc currentTile
 
 areCoordsInBound :: TileGrid -> Coords -> Bool
 areCoordsInBound tg cs = (&&) (maxX >= (x cs)) (maxY >= (y cs))
-    where maxX = length tg
-          maxY = length $ tg !! 0
+    where maxX = (length tg) - 1
+          maxY = (length $ tg !! 0) - 1
 
 getTileCell :: TileGrid -> Coords -> Maybe TileCell
 getTileCell tg cs
+    | (||) ((x cs) < 0) ((y cs) < 0) = Nothing
+    | (||) ((x cs) > maxX) ((y cs) > maxY) = Nothing
     | areCoordsInBound tg cs = Just $  (tg !! (y cs)) !! (x cs)
     | otherwise = Nothing
-    where maxX = length tg
-          maxY = length $ tg !! 0
+    where maxX = (length tg) - 1
+          maxY = (length $ tg !! 0) - 1
 
 peekDirection :: TileGrid -> TileCell -> Direction -> Maybe TileCell
 peekDirection tg tc d
@@ -77,28 +79,26 @@ getConnectedTiles tg tl = filter (\t -> areTilesConnected tl t) $ accumulateJust
           verticalRange = [startY .. endY]
           neighboursCoords = map (\p -> Coords { x = (p !! 0), y = (p !! 1)}) $ filter (\p -> not $  (&&) ((p !! 0) == csX) ((p !! 1) == csY) ) $ sequence [horizontalRange,verticalRange]
 
-
---areTilesConnected :: TileGrid -> TileCell -> TileCell -> Bool
---areTilesConnected tg t1 t2
---    | (||) (t1dirA == t2dirA) (t1dirA == t2dirB) = True
---    | (||) (t1dirB == t2dirA) (t1dirB == t2dirB) = True
---    | (&&) isNextToStart ((fst $ tile t2) == START) = True
---    | otherwise = False
---    where t1dirA = fst $ tile t1
---          t1dirB = snd $ tile t1
---          t2dirA = fst $ tile t2
---          t2dirB = snd $ tile t2
---          tileCells = accumulateJustsFromMaybes (map (\d -> peekDirection tg t1 d) [t1dirA, t1dirB]) []
---          isNextToStart = any (\t -> (fst $ tile t) == START) tileCells
-
 areTilesConnected :: TileCell -> TileCell -> Bool
-areTilesConnected t1 t2 = doDirectionsMatch (whichDirectionIsTile t1 t2) t2
+areTilesConnected t1 t2 = (&&) isNextPosCorrect amIOpenToThat
+    where maybeDirection = whichDirectionIsTile t1 t2
+          isNextPosCorrect = doDirectionsMatch maybeDirection t2
+          amIOpenToThat = amIOpenToDirection maybeDirection t1
 
 doDirectionsMatch :: Maybe Direction -> TileCell -> Bool
 doDirectionsMatch Nothing _ = False
 doDirectionsMatch (Just d) t
   | tileContainsDirection t START = True
   | otherwise = tileContainsDirection t d
+
+amIOpenToDirection :: Maybe Direction -> TileCell -> Bool
+amIOpenToDirection Nothing _ = False
+amIOpenToDirection (Just d) t
+  | tileContainsDirection t START = True
+  | d == N = tileContainsDirection t S
+  | d == S = tileContainsDirection t N
+  | d == W = tileContainsDirection t E
+  | d == E = tileContainsDirection t W
 
 tileContainsDirection :: TileCell -> Direction -> Bool
 tileContainsDirection tc d = (||) ((fst t) == d) ((snd t) == d)
