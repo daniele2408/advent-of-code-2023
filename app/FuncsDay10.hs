@@ -6,6 +6,7 @@ import Data.Char
 import Data.List
 import CommonFuncs
 import Data.Maybe
+import qualified Data.Set as Set
 
 import Debug.Trace
 
@@ -65,7 +66,10 @@ accumulateJustsFromMaybes ((Just x):xs) acc = accumulateJustsFromMaybes xs (x:ac
 accumulateJustsFromMaybes (Nothing:xs) acc = accumulateJustsFromMaybes xs acc
 
 getConnectedTiles :: TileGrid -> TileCell -> [TileCell]
-getConnectedTiles tg tl = filter (\t -> areTilesConnected tl t) $ accumulateJustsFromMaybes (map (\cs -> getTileCell tg cs) $ filter (\cs -> areCoordsInBound tg cs) neighboursCoords) []
+getConnectedTiles tg tl = filter (\t -> areTilesConnected tl t) $ getNeighbourTiles tg tl
+
+getNeighbourTiles :: TileGrid -> TileCell -> [TileCell]
+getNeighbourTiles tg tl = accumulateJustsFromMaybes (map (\cs -> getTileCell tg cs) $ filter (\cs -> areCoordsInBound tg cs) neighboursCoords) []
     where cs = coords tl
           csX = x cs
           csY = y cs
@@ -118,7 +122,40 @@ whichDirectionIsTile t1 t2
         sameRow = x1 == x2
         sameCol = y1 == y2
 
+data Side = L | R deriving (Show, Eq)
 
+data GroundCellContainers = GroundCellContainers {
+    left :: Set TileCell,
+    right :: Set TileCell
+}
+
+addToGroundContainer :: TileCell -> Side -> GroundCellContainers -> GroundCellContainers
+addToGroundContainer t s gcc
+    | s == L = GroundCellContainers { left = (insert t (left gcc)), right = (right gcc) }
+    | s == D = GroundCellContainers { left = (left gcc), right = (insert t (right gcc)) }
+
+
+collectGroundTiles :: TileGrid -> TileCell -> GroundCellContainers -> GroundCellContainers
+collectGroundTiles tg tc rightTcs leftTcs
+    where neighbourTiles =
+
+getNorthCell :: TileGrid -> TileCell -> Maybe TileCell
+getNorthCell tg tc = getTileCell tg N
+
+getSouthCell :: TileGrid -> TileCell -> Maybe TileCell
+getSouthCell tg tc = getTileCell tg S
+
+getWestCell :: TileGrid -> TileCell -> Maybe TileCell
+getWestCell tg tc = getTileCell tg W
+
+getEastCell :: TileGrid -> TileCell -> Maybe TileCell
+getEastCell tg tc = getTileCell tg E
+
+getNorhtWestCell :: TileGrid -> TileCell -> MaybeTileCell
+getNorhtWestCell tg tc
+    |
+    |
+    where maybeNorthCell = getNorthCell tg tc
 
 parseTileFromChar :: Char -> Int -> Int -> TileCell
 parseTileFromChar c y x
