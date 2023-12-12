@@ -6,23 +6,23 @@ import Data.Char
 import Data.List
 import CommonFuncs
 import Data.Maybe
-import qualified Data.Set as Set
+import qualified Data.Set as DS
 
 import Debug.Trace
 
-data Direction = N | S | E | W | NONE | START deriving (Show, Eq)
+data Direction = N | S | E | W | NONE | START deriving (Show, Eq, Ord)
 type Tile = (Direction, Direction)
 
 instance Eq Tile where -- TODO test me
     tl1 == tl2 = not $ (&&) ((fst tl1) /= (fst tl2)) ((fst tl1) /= (snd tl2))
 
-data Coords = Coords { x :: Int, y :: Int } deriving (Show, Eq)
-data TileCell = TileCell { tile :: Tile, coords :: Coords } deriving (Show, Eq)
+data Coords = Coords { x :: Int, y :: Int } deriving (Show, Eq, Ord)
+data TileCell = TileCell { tile :: Tile, coords :: Coords } deriving (Show, Eq, Ord)
 type TileRow = [TileCell]
 type TileGrid = [TileRow]
 
-getHalfLoopStep :: TileGrid -> Int
-getHalfLoopStep tg = div ((followTile tg randomNextTiles startTile startTile 1) + 1) 2
+startFollowingPath :: TileGrid -> Int
+startFollowingPath tg = div ((followTile tg randomNextTiles startTile startTile 1) + 1) 2
     where startTile = findStart tg
           nextTiles = filter (\t -> areTilesConnected startTile t) $ accumulateJustsFromMaybes (map (\d -> peekDirection tg startTile d) [N, S, W, E]) []
           randomNextTiles = nextTiles !! 0
@@ -125,37 +125,207 @@ whichDirectionIsTile t1 t2
 data Side = L | R deriving (Show, Eq)
 
 data GroundCellContainers = GroundCellContainers {
-    left :: Set TileCell,
-    right :: Set TileCell
+    left :: DS.Set TileCell,
+    right :: DS.Set TileCell
 }
+
+emptyGcc :: GroundCellContainers
+emptyGcc = GroundCellContainers { left = DS.fromList [], right = DS.fromList [] }
+
+startFindAreaPerimeter :: TileGrid -> DS.Set TileCell
+startFindAreaPerimeter tg = findInnerAreaPerimeter tg randomNextTile startTile startTile turnCounter (emptyGcc)
+    where startTile = findStart tg
+          nextTiles = filter (\t -> areTilesConnected startTile t) $ accumulateJustsFromMaybes (map (\d -> peekDirection tg startTile d) [N, S, W, E]) []
+          randomNextTile = nextTiles !! 0
+          turnCounter = addTurnMovingFromTo startTile randomNextTile TurnCounter { rightTurns = 0, leftTurns = 0}
+
+
+answerQuestionDayTen' :: String -> DS.Set TileCell
+answerQuestionDayTen' inputText = startFindAreaPerimeter $ parseGridFromInputText inputText
+
+findInnerAreaPerimeter :: TileGrid -> TileCell -> TileCell -> TileCell -> TurnCounter -> GroundCellContainers -> DS.Set TileCell
+findInnerAreaPerimeter gc currentTile previousTile target turnCounter gcc
+    | nextTile == target = extractInnerSet newTurnCounter gcc
+    | otherwise = findInnerAreaPerimeter gc nextTile currentTile target newTurnCounter newGcc
+    where nextTile = head $ filter (\ct -> ct /= previousTile) $ getConnectedTiles gc currentTile
+          neighbourCellsContainer = collectGroundTiles gc currentTile
+          newGcc = selectGroundTiles currentTile nextTile neighbourCellsContainer gcc
+          newTurnCounter = addTurnMovingFromTo currentTile nextTile turnCounter
+
+extractInnerSet :: TurnCounter -> GroundCellContainers -> DS.Set TileCell
+extractInnerSet tCounter gcc
+  | isClockWise tCounter = right gcc
+  | otherwise = left gcc
+
+addCellsToGroundContainer :: [TileCell] -> Side -> GroundCellContainers -> GroundCellContainers
+addCellsToGroundContainer ts s gcc = foldl (\acc t -> (addToGroundContainer t s acc)) gcc ts
 
 addToGroundContainer :: TileCell -> Side -> GroundCellContainers -> GroundCellContainers
 addToGroundContainer t s gcc
-    | s == L = GroundCellContainers { left = (insert t (left gcc)), right = (right gcc) }
-    | s == D = GroundCellContainers { left = (left gcc), right = (insert t (right gcc)) }
+    | s == L = GroundCellContainers { left = (DS.insert t (left gcc)), right = (right gcc) }
+    | s == R = GroundCellContainers { left = (left gcc), right = (DS.insert t (right gcc)) }
+
+getTileCellIfGround :: TileGrid -> TileCell -> Direction -> Maybe TileCell
+getTileCellIfGround tg tc d
+    | maybeNextTileCell == Nothing = Nothing
+    | isTileCellGround maybeNextTileCell = maybeNextTileCell
+    where maybeNextTileCell = getTileCell tg (generateCoords (coords tc) d)
+
+isTileCellGround :: Maybe TileCell -> Bool
+isTileCellGround Nothing = False
+isTileCellGround (Just tc) = (fst $ tile tc) == NONE
+
+keepIfTileCellGround :: Maybe TileCell -> Maybe TileCell
+keepIfTileCellGround maybeTc
+  | isTileCellGround maybeTc = maybeTc
+  | otherwise = Nothing
+
+collectGroundTiles :: TileGrid -> TileCell -> NeighboursCellContainer
+collectGroundTiles tg tc = NeighboursCellContainer {
+            n = keepIfTileCellGround $ if' (tileContainsDirection tc N) Nothing (getTileCell tg (generateCoords ctc N)),
+            s = keepIfTileCellGround $ if' (tileContainsDirection tc S) Nothing (getTileCell tg (generateCoords ctc S)),
+            w = keepIfTileCellGround $ if' (tileContainsDirection tc W) Nothing (getTileCell tg (generateCoords ctc W)),
+            e = keepIfTileCellGround $ if' (tileContainsDirection tc E) Nothing (getTileCell tg (generateCoords ctc E)),
+            ne = keepIfTileCellGround $ getNorthEastCell tg (Just tc),
+            nw = keepIfTileCellGround $ getNorthWestCell tg (Just tc),
+            se = keepIfTileCellGround $ getSouthEastCell tg (Just tc),
+            sw = keepIfTileCellGround $ getSouthWestCell tg (Just tc)
+          }
+          where ctc = coords tc
+
+data TurnCounter = TurnCounter {
+  rightTurns :: Int,
+  leftTurns :: Int
+}
+
+addTurnMovingFromTo :: TileCell -> TileCell -> TurnCounter -> TurnCounter
+addTurnMovingFromTo tileCell nextTileCell tCount
+  | (&&) (t == (N,W)) (maybeD == Just N) = addTurn L tCount
+  | (&&) (t == (N,W)) (maybeD == Just W) = addTurn R tCount
+  | (&&) (t == (N,E)) (maybeD == Just N) = addTurn R tCount
+  | (&&) (t == (N,E)) (maybeD == Just E) = addTurn L tCount
+  | (&&) (t == (S,E)) (maybeD == Just E) = addTurn R tCount
+  | (&&) (t == (S,E)) (maybeD == Just S) = addTurn L tCount
+  | (&&) (t == (S,W)) (maybeD == Just S) = addTurn R tCount
+  | (&&) (t == (S,W)) (maybeD == Just W) = addTurn L tCount
+  | otherwise = tCount
+  where t = tile tileCell
+        maybeD = whichDirectionIsTile tileCell nextTileCell
 
 
-collectGroundTiles :: TileGrid -> TileCell -> GroundCellContainers -> GroundCellContainers
-collectGroundTiles tg tc rightTcs leftTcs
-    where neighbourTiles =
+addTurn :: Side -> TurnCounter -> TurnCounter
+addTurn s tc
+  | s == L = TurnCounter { rightTurns = (rightTurns tc), leftTurns = ((+1) $ leftTurns tc)}
+  | s == R = TurnCounter { rightTurns = ((+1) $ rightTurns tc), leftTurns = (leftTurns tc)}
 
-getNorthCell :: TileGrid -> TileCell -> Maybe TileCell
-getNorthCell tg tc = getTileCell tg N
+isClockWise :: TurnCounter -> Bool
+isClockWise tc = (rightTurns tc) > (leftTurns tc)
 
-getSouthCell :: TileGrid -> TileCell -> Maybe TileCell
-getSouthCell tg tc = getTileCell tg S
+selectGroundTiles :: TileCell -> TileCell -> NeighboursCellContainer -> GroundCellContainers -> GroundCellContainers
+selectGroundTiles tc tcNext ncc gcc
+    | t == (N,S) = distributeCells tc tcNext [(nw ncc), (w ncc), (sw ncc)] [(e ncc), (ne ncc), (se ncc)] gcc
+    | t == (E,W) = distributeCells tc tcNext [(n ncc), (ne ncc), (nw ncc)] [(s ncc), (se ncc), (sw ncc)] gcc
+    | t == (N,W) = distributeCells tc tcNext [(nw ncc)] [(s ncc), (e ncc), (sw ncc), (ne ncc), (se ncc)] gcc
+    | t == (N,E) = distributeCells tc tcNext [(s ncc), (e ncc), (sw ncc), (nw ncc), (se ncc)] [(ne ncc)] gcc
+    | t == (S,E) = distributeCells tc tcNext [(n ncc), (w ncc), (sw ncc), (nw ncc), (ne ncc)] [(se ncc)] gcc
+    | t == (S,W) = distributeCells tc tcNext [(n ncc), (e ncc), (se ncc), (nw ncc), (ne ncc)] [(sw ncc)] gcc
+    where t = tile tc
 
-getWestCell :: TileGrid -> TileCell -> Maybe TileCell
-getWestCell tg tc = getTileCell tg W
+distributeCells :: TileCell -> TileCell -> [Maybe TileCell] -> [Maybe TileCell] -> GroundCellContainers -> GroundCellContainers
+distributeCells tc tcNext groupMaybeA groupMaybeB gcc
+  | d == Nothing = error "Couldn't assess where next tile is!"
+  | otherwise = handleDirection (tile tc) d groupA groupB gcc
+  where d = whichDirectionIsTile tc tcNext
+        groupA = accumulateJustsFromMaybes  groupMaybeA []
+        groupB = accumulateJustsFromMaybes  groupMaybeB []
 
-getEastCell :: TileGrid -> TileCell -> Maybe TileCell
-getEastCell tg tc = getTileCell tg E
+handleDirection :: Tile -> Maybe Direction -> [TileCell] -> [TileCell] -> GroundCellContainers -> GroundCellContainers
+handleDirection _ Nothing _ _ gcc = gcc
+handleDirection t (Just d) groupA groupB gcc
+  | (&&) (t == (N,S)) (d == N) = addCellsToBothParts groupA L groupB R gcc
+  | (&&) (t == (N,S)) (d == S) = addCellsToBothParts groupA R groupB L gcc
+  | (&&) (t == (E,W)) (d == E) = addCellsToBothParts groupA L groupB R gcc
+  | (&&) (t == (E,W)) (d == W) = addCellsToBothParts groupA R groupB L gcc
+  | (&&) (t == (N,W)) (d == N) = addCellsToBothParts groupA L groupB R gcc
+  | (&&) (t == (N,W)) (d == W) = addCellsToBothParts groupA R groupB L gcc
+  | (&&) (t == (N,E)) (d == N) = addCellsToBothParts groupA L groupB R gcc
+  | (&&) (t == (N,E)) (d == E) = addCellsToBothParts groupA R groupB L gcc
+  | (&&) (t == (S,E)) (d == E) = addCellsToBothParts groupA L groupB R gcc
+  | (&&) (t == (S,E)) (d == S) = addCellsToBothParts groupA R groupB L gcc
+  | (&&) (t == (S,W)) (d == S) = addCellsToBothParts groupA L groupB R gcc
+  | (&&) (t == (S,W)) (d == W) = addCellsToBothParts groupA R groupB L gcc
+  | otherwise = error ("Couldn't find match for t " ++ (show t) ++ " and d " ++ (show d) ++ ". Direction d is supposed to be in tile t.")
 
-getNorhtWestCell :: TileGrid -> TileCell -> MaybeTileCell
-getNorhtWestCell tg tc
-    |
-    |
-    where maybeNorthCell = getNorthCell tg tc
+
+addCellsToBothParts :: [TileCell] -> Side -> [TileCell] -> Side -> GroundCellContainers -> GroundCellContainers
+addCellsToBothParts groupA s groupB s' gcc = addCellsToGroundContainer groupB s' $ addCellsToGroundContainer groupA s gcc
+
+if' :: Bool -> a -> a -> a
+if' True  x _ = x
+if' False _ y = y
+
+data NeighboursCellContainer = NeighboursCellContainer {
+  n :: Maybe TileCell,
+  s :: Maybe TileCell,
+  w :: Maybe TileCell,
+  e :: Maybe TileCell,
+  ne :: Maybe TileCell,
+  nw :: Maybe TileCell,
+  se :: Maybe TileCell,
+  sw :: Maybe TileCell
+}
+
+getDiagonalTiles :: TileGrid -> TileCell -> [Maybe TileCell]
+getDiagonalTiles tg tc = [nw, ne, sw, se]
+    where nw = getNorthWestCell tg (Just tc)
+          ne = getNorthEastCell tg (Just tc)
+          sw = getSouthWestCell tg (Just tc)
+          se = getSouthEastCell tg (Just tc)
+
+generateCoords :: Coords -> Direction -> Coords
+generateCoords c d
+  | d == N = Coords { x = cx, y = (cy - 1) }
+  | d == S = Coords { x = cx, y = (cy + 1) }
+  | d == E = Coords { x = (cx + 1), y = cy }
+  | d == N = Coords { x = (cx - 1), y = cy }
+  where cx = x c
+        cy = y c
+
+getNorthCell :: TileGrid -> Maybe TileCell -> Maybe TileCell
+getNorthCell _ Nothing = Nothing
+getNorthCell tg (Just t) = getTileCell tg (generateCoords tileCoords N)
+  where tileCoords = coords t
+
+getSouthCell :: TileGrid -> Maybe TileCell -> Maybe TileCell
+getSouthCell _ Nothing = Nothing
+getSouthCell tg (Just t) = getTileCell tg (generateCoords tileCoords S)
+  where tileCoords = coords t
+
+getWestCell :: TileGrid -> Maybe TileCell -> Maybe TileCell
+getWestCell _ Nothing = Nothing
+getWestCell tg (Just t) = getTileCell tg (generateCoords tileCoords W)
+ where tileCoords = coords t
+
+getEastCell :: TileGrid -> Maybe TileCell -> Maybe TileCell
+getEastCell _ Nothing = Nothing
+getEastCell tg (Just t) = getTileCell tg (generateCoords tileCoords E)
+ where tileCoords = coords t
+
+getNorthWestCell :: TileGrid -> Maybe TileCell -> Maybe TileCell
+getNorthWestCell _ Nothing = Nothing
+getNorthWestCell tg tc = getWestCell tg $ getNorthCell tg tc
+
+getNorthEastCell :: TileGrid -> Maybe TileCell -> Maybe TileCell
+getNorthEastCell _ Nothing = Nothing
+getNorthEastCell tg tc = getEastCell tg $ getNorthCell tg tc
+
+getSouthWestCell :: TileGrid -> Maybe TileCell -> Maybe TileCell
+getSouthWestCell _ Nothing = Nothing
+getSouthWestCell tg tc = getWestCell tg $ getSouthCell tg tc
+
+getSouthEastCell :: TileGrid -> Maybe TileCell -> Maybe TileCell
+getSouthEastCell _ Nothing = Nothing
+getSouthEastCell tg tc = getEastCell tg $ getSouthCell tg tc
 
 parseTileFromChar :: Char -> Int -> Int -> TileCell
 parseTileFromChar c y x
@@ -178,4 +348,4 @@ parseGridFromInputText inputText = map (\p -> parseTileRowFromLine (snd p) (fst 
     where ls = lines inputText
 
 answerQuestionDayTen :: String -> Int
-answerQuestionDayTen inputText = getHalfLoopStep $ parseGridFromInputText inputText
+answerQuestionDayTen inputText = startFollowingPath $ parseGridFromInputText inputText
