@@ -105,6 +105,15 @@ testGeneratePairs = TestCase(do
     assertEqual "" (DS.fromList [(1,2), (1,3), (2,3)]) (DS.fromList $ generateUniquePairs [1,2,3] [])
   )
 
+testNewGetDistance = TestCase(do
+    inputText <- readFile "./resources/sample/inputday11.txt"
+    let u = fiatLux inputText
+
+    assertEqual "" 1030 (computeSumDistanceByFactor u 10)
+    assertEqual "" 8410 (computeSumDistanceByFactor u 100)
+  )
+
+
 testAnswerSample = TestCase(do
     inputText <- readFile "./resources/sample/inputday11.txt"
     let result = answerQuestionDayEleven inputText
@@ -116,7 +125,9 @@ testAnswerSample = TestCase(do
 testAnswer = TestCase(do
     inputText <- readFile "./resources/inputday11.txt"
     let result = answerQuestionDayEleven inputText
+    let result' = answerQuestionDayEleven' inputText
 
-    assertEqual "" 374 result
+    assertEqual "" 9550717 result
+    assertEqual "" 648458253817 result'
 
   )

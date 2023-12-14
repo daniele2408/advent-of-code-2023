@@ -1,3 +1,5 @@
+{-# LANGUAGE NumericUnderscores #-}
+
 module FuncsDay11 where
 
 import CommonFuncs
@@ -115,7 +117,7 @@ countDistance u cellStart cellTarget = countDistanceIterative u cellStart cellSt
 
 countDistanceIterative :: Universe -> Cell -> Cell -> Cell -> Int -> Int
 countDistanceIterative u previousCell currentCell target acc
-  | closestNeighbourToTarget == target = trace ("Bingo!: " ++ (show $ acc + 1)) acc+1
+  | closestNeighbourToTarget == target = acc+1
   | otherwise = countDistanceIterative u currentCell closestNeighbourToTarget target (acc+1)
      where closestNeighbourToTarget = snd $ head $ filter (\p -> (snd p) /= previousCell) $ orderNeighboursByDistanceAsc u currentCell target
 
@@ -173,3 +175,32 @@ getDistanceY cell cell' = (abs $ (y cs) - (y cs'))
 
 getDistance :: Cell -> Cell -> Int
 getDistance cell cell' = (getDistanceX cell cell') + (getDistanceY cell cell')
+
+getDistanceX' :: Cell -> Cell -> [Int] -> Int -> Int
+getDistanceX' cell cell' poss factor = plainDistanceX + (countHowManyVoids * (factor - 1))
+    where plainDistanceX = getDistanceX cell cell'
+          minX = min (getX cell) (getX cell')
+          maxX = max (getX cell) (getX cell')
+          countHowManyVoids = length $ filter (\pos -> (&&) (minX < pos) (maxX > pos)) poss
+
+getDistanceY' :: Cell -> Cell -> [Int] -> Int -> Int
+getDistanceY' cell cell' poss factor = plainDistanceY + (countHowManyVoids * (factor - 1))
+    where plainDistanceY = getDistanceY cell cell'
+          minY = min (getY cell) (getY cell')
+          maxY = max (getY cell) (getY cell')
+          countHowManyVoids = length $ filter (\pos -> (&&) (minY < pos) (maxY > pos)) poss
+
+getDistance' :: Cell -> Cell -> [Int] -> [Int] -> Int -> Int
+getDistance' cell cell' xVoids yVoids factor = (getDistanceX' cell cell' xVoids factor) + (getDistanceY' cell cell' yVoids factor)
+
+
+computeSumDistanceByFactor :: Universe -> Int -> Int
+computeSumDistanceByFactor universe factor = sum $ map (\p -> getDistance' (fst p) (snd p) voidColPos voidRowPos factor) pairs
+    where galaxies = map (\p -> (snd p)) $ extractGalaxyCatalog universe
+          voidRowPos = findVoidStripesPosition universe
+          voidColPos = findVoidColumnPosition universe
+          pairs = generateUniquePairs galaxies []
+
+answerQuestionDayEleven' :: String -> Int
+answerQuestionDayEleven' inputText = computeSumDistanceByFactor universe 1_000_000
+    where universe = fiatLux inputText
