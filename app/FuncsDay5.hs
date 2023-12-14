@@ -88,12 +88,12 @@ parseSeedsRange xs = map (\p -> ((fst p), (fst p) + (snd p) - 1)) $ zip evenPosI
           oddPosInts = map (\p -> snd p) $ filter (\p -> (mod (fst p) 2) == 1) $ zip [0..(nSeeds-1)] seeds
 
 runMappingRangeInt :: [Matcher] -> RangeNum -> Int
-runMappingRangeInt ms seedRange = do
+runMappingRangeInt ms seedRange = minimum $ map (\i -> runMapping ms i) $ findStartPointsMonotone seedRange seedRangesMatcher
+    where seedRangesMatcher = map (\rm -> fst rm) $ rangeMap $ selMatcher Seed ms
 
-    let matcherSeed = selMatcher Seed ms
-    let overlapRanges = filter (\rn -> [(fst rn)..(snd rn)] /= []) $ map (\srcRange -> findOverlapBetween seedRange srcRange) $ map (\rm -> fst rm) (rangeMap matcherSeed)
-
-    minimum $ concat $ map (\or -> map (\i -> runMapping ms i) [(fst or)..(snd or)]) overlapRanges
+findStartPointsMonotone :: RangeNum -> [RangeNum] -> [Int]
+findStartPointsMonotone rn rns = ((fst rn):(snd rn):filter (\p -> isInRange p rn) allPoints)
+    where allPoints = map (\x -> snd x) rns ++ (map (\x -> fst x) rns)
 
 
 runMapping :: [Matcher] -> Int -> Int

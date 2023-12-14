@@ -1,4 +1,4 @@
-module Tests where
+module TestsGeneral where
 
 import Test.HUnit
 import Funcs
@@ -339,8 +339,3 @@ testAnswersDay9 = TestCase(do
     assertEqual "" 1987402313 (answerQuestionDayNine inputText)
     assertEqual "" 900 (answerQuestionDayNine' inputText)
     )
-
-testSampleAnswersDay10 = TestCase(do
-    inputText <- readFile "./resources/sample/inputday10.txt"
-    assertEqual "" 1 ()
-  )
