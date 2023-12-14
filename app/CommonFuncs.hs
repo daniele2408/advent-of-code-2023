@@ -63,3 +63,19 @@ extractEvenPosElements :: [a] -> [a]
 extractEvenPosElements [] = []
 extractEvenPosElements xs = map (\p -> snd p) $ filter (\p -> (mod (fst p) 2) == 0) $ zip [0..(l-1)] xs
     where l = length xs
+
+sortPairsBySecond (_, a1) (_, a2)
+  | a1 > a2 = GT
+  | a1 < a2 = LT
+  | a1 == a2 = EQ
+
+sortPairsByFirst (a1, _) (a2, _)
+  | a1 > a2 = GT
+  | a1 < a2 = LT
+  | a1 == a2 = EQ
+
+-- auxiliary, it filters and extracts non-empty Maybe values in a Maybes list
+accumulateJustsFromMaybes :: [Maybe a] -> [a] -> [a]
+accumulateJustsFromMaybes [] acc = acc
+accumulateJustsFromMaybes ((Just x):xs) acc = accumulateJustsFromMaybes xs (x:acc)
+accumulateJustsFromMaybes (Nothing:xs) acc = accumulateJustsFromMaybes xs acc

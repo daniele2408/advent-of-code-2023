@@ -110,12 +110,6 @@ getTileCell tg cs
     where maxY = (length tg) - 1
           maxX = (length $ tg !! 0) - 1
 
--- auxiliary, it filters and extracts non-empty Maybe values in a Maybes list
-accumulateJustsFromMaybes :: [Maybe a] -> [a] -> [a]
-accumulateJustsFromMaybes [] acc = acc
-accumulateJustsFromMaybes ((Just x):xs) acc = accumulateJustsFromMaybes xs (x:acc)
-accumulateJustsFromMaybes (Nothing:xs) acc = accumulateJustsFromMaybes xs acc
-
 -- Check if two tiles are next to each other and actually linked
 areTilesConnected :: TileCell -> TileCell -> Bool
 areTilesConnected t1 t2 = (&&) isNextPosCorrect amIOpenToThat

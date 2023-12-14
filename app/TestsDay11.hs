@@ -1,6 +1,7 @@
 module TestsDay10 where
 
 import Test.HUnit
+import qualified Data.Set as DS
 
 import FuncsDay11
 import CommonFuncs
@@ -48,3 +49,74 @@ testExpandUniverse = TestCase(do
     assertEqual "" 13 (length $ eu !! 0)
 
     )
+
+testInsert = TestCase(do
+    let input = "#...#....."
+    let output = "#....#......."
+
+    assertEqual "" output (iterativeInsertIntPositions [5, 2, 8] '.' input)
+
+  )
+
+testGetDistance = TestCase(do
+      inputText <- readFile "./resources/sample/inputday11.txt"
+      let eu = expandUniverse $ fiatLux inputText
+
+      let gs = extractGalaxyCatalog eu
+
+      let g5 = snd $ gs !! 4
+      let g9 = snd $ gs !! 8
+
+      assertEqual "" 9 (getDistance g5 g9)
+
+  )
+
+testOrderByDistance = TestCase(do
+
+    inputText <- readFile "./resources/sample/inputday11.txt"
+    let eu = expandUniverse $ fiatLux inputText
+    let gs = extractGalaxyCatalog eu
+
+    let g5 = snd $ gs !! 4
+    let g9 = snd $ gs !! 8
+
+    let neighs = orderNeighboursByDistanceAsc eu g5 g9
+    let expectedRes = [(8,Cell {coords = Coords {x = 2, y = 6}, value = Void}),(8,Cell {coords = Coords {x = 1, y = 7}, value = Void}),(10,Cell {coords = Coords {x = 0, y = 6}, value = Void}),(10,Cell {coords = Coords {x = 1, y = 5}, value = Void})]
+
+    assertEqual "" expectedRes neighs
+
+  )
+
+
+testCountDistance = TestCase(do
+    inputText <- readFile "./resources/sample/inputday11.txt"
+    let eu = expandUniverse $ fiatLux inputText
+
+    let gs = extractGalaxyCatalog eu
+
+    let g5 = snd $ gs !! 4
+    let g9 = snd $ gs !! 8
+
+    assertEqual "" 9 (countDistance eu g5 g9)
+    assertEqual "" 9 (countDistance eu g9 g5)
+  )
+
+testGeneratePairs = TestCase(do
+    assertEqual "" (DS.fromList [(1,2), (1,3), (2,3)]) (DS.fromList $ generateUniquePairs [1,2,3] [])
+  )
+
+testAnswerSample = TestCase(do
+    inputText <- readFile "./resources/sample/inputday11.txt"
+    let result = answerQuestionDayEleven inputText
+
+    assertEqual "" 374 result
+
+  )
+
+testAnswer = TestCase(do
+    inputText <- readFile "./resources/inputday11.txt"
+    let result = answerQuestionDayEleven inputText
+
+    assertEqual "" 374 result
+
+  )

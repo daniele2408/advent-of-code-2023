@@ -75,11 +75,6 @@ extractMostFrequentSeed hc
     | otherwise = Nothing
     where sortedListByFrequencyAsc = sortBy sortPairsBySecond $ computeCountSeed $ filter (\x -> x /= J) hc
 
-sortPairsBySecond (_, a1) (_, a2)
-  | a1 > a2 = GT
-  | a1 < a2 = LT
-  | a1 == a2 = EQ
-
 extractCountsFromCountSeed :: CountSeed -> [Int]
 extractCountsFromCountSeed cs = map (\x -> snd x) cs
 
