@@ -15,7 +15,7 @@ type Universe = [CellStripe]
 type CellCatalog = [(Int, Cell)]
 
 answerQuestionDayEleven :: String -> Int
-answerQuestionDayEleven inputText = sum $ map (\p -> countDistance universe (fst p) (snd p)) pairs
+answerQuestionDayEleven inputText = sum $ map (\p -> getDistance (fst p) (snd p)) pairs
     where universe = expandUniverse $ fiatLux inputText
           galaxies = map (\p -> (snd p)) $ extractGalaxyCatalog universe
           pairs = generateUniquePairs galaxies []
