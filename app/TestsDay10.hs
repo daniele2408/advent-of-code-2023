@@ -6,12 +6,13 @@ import FuncsDay10
 import CommonFuncs
 import Data.Set
 
-testCollectGroundTiles = TestCase(do
+testcollectNonPathTiles = TestCase(do
     inputText <- readFile "./resources/sample/inputday10.txt"
     let gc = parseGridFromInputText inputText
     let Just tc = getTileCell gc Coords { x = 2, y = 1}
     let Just nextTc = getTileCell gc Coords { x = 3, y = 1}
-    let ncc = collectGroundTiles gc tc
+    let path = followTileKeepPath gc tc nextTc nextTc (fromList [])
+    let ncc = collectNonPathTiles gc tc path
     let gcc = selectGroundTiles tc nextTc ncc emptyGcc
     let tot = (length $ left gcc) + (length $ right gcc)
     assertEqual "" 4 tot
@@ -70,20 +71,31 @@ testGetPerimeter = TestCase(do
                 inputText <- readFile "./resources/sample/inputday10.txt"
                 let gc = parseGridFromInputText inputText
                 let Just tc = getTileCell gc Coords { x = 2, y = 2 }
-                assertEqual "" (fromList [tc]) (startFindAreaPerimeter gc)
-                assertEqual "" 1 (length $ startFindAreaPerimeter gc)
+                assertEqual "" 1 (startFindAreaPerimeter gc)
     )
 
 testGetPerimeterBis = TestCase(do
                 inputText <- readFile "./resources/sample/inputday10bis.txt"
                 let gc = parseGridFromInputText inputText
-                assertEqual "" 4 (length $ startFindAreaPerimeter gc)
+                assertEqual "" 4 (startFindAreaPerimeter gc)
     )
 
 testGetPerimeterTris = TestCase(do
                 inputText <- readFile "./resources/sample/inputday10tris.txt"
                 let gc = parseGridFromInputText inputText
-                assertEqual "" 4 (length $ startFindAreaPerimeter gc)
+                assertEqual "" 4 (startFindAreaPerimeter gc)
+    )
+
+testGetPerimeterQuater = TestCase(do
+                inputText <- readFile "./resources/sample/inputday10quater.txt"
+                let gc = parseGridFromInputText inputText
+                assertEqual "" 8 (startFindAreaPerimeter gc)
+    )
+
+testGetPerimeterQuinquies = TestCase(do
+                inputText <- readFile "./resources/sample/inputday10quinquies.txt"
+                let gc = parseGridFromInputText inputText
+                assertEqual "" 10 (startFindAreaPerimeter gc)
     )
 
 testCheckGetConnected = TestCase(do
@@ -98,7 +110,7 @@ testCheckGetConnected = TestCase(do
 allTests = TestList [
     TestLabel "turnCounter" testTurnCounter,
     TestLabel "testAddTurn" testAddTurn,
-    TestLabel "testCollectGroundTiles" testCollectGroundTiles,
+    TestLabel "testcollectNonPathTiles" testcollectNonPathTiles,
     TestLabel "testGetTileDirection" testGetTileDirection,
     TestLabel "testWhichDirection" testWhichDirection
     ]
@@ -106,5 +118,7 @@ allTests = TestList [
 testPerimeter = TestList [
     TestLabel "testGetPerimeter" testGetPerimeter,
     TestLabel "testGetPerimeterBis" testGetPerimeterBis,
-    TestLabel "testGetPerimeterTris" testGetPerimeterTris
+    TestLabel "testGetPerimeterTris" testGetPerimeterTris,
+    TestLabel "testGetPerimeterQuater" testGetPerimeterQuater,
+    TestLabel "testGetPerimeterQuinquies" testGetPerimeterQuinquies
     ]

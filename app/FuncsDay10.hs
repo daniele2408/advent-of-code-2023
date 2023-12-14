@@ -136,15 +136,56 @@ data GroundCellContainers = GroundCellContainers {
 emptyGcc :: GroundCellContainers
 emptyGcc = GroundCellContainers { left = DS.fromList [], right = DS.fromList [] }
 
-startFindAreaPerimeter :: TileGrid -> DS.Set TileCell
-startFindAreaPerimeter tg = findInnerAreaPerimeter tg randomNextTile startTile startTile turnCounter (emptyGcc)
+followTileKeepPath :: TileGrid -> TileCell -> TileCell -> TileCell -> DS.Set TileCell -> DS.Set TileCell
+followTileKeepPath gc currentTile previousTile target acc
+    | nextTile == target = (DS.insert currentTile $ DS.insert previousTile acc)
+--    | otherwise = trace ((show previousTile) ++ " --> " ++ (show currentTile) ++ " il sacco ha " ++ (show $ length acc) ++ " elementi") followTileKeepPath gc nextTile currentTile target (DS.insert previousTile acc)
+    | otherwise = followTileKeepPath gc nextTile currentTile target (DS.insert previousTile acc)
+    where nextTile = head $ filter (\ct -> ct /= previousTile) $ getConnectedTiles gc currentTile
+
+startFindAreaPerimeter :: TileGrid -> Int
+startFindAreaPerimeter tg = findAllNonPathTilesInArea tg path perimeter
     where startTile = findStart tg
           nextTiles = filter (\t -> areTilesConnected startTile t) $ accumulateJustsFromMaybes (map (\d -> peekDirection tg startTile d) [N, S, W, E]) []
           randomNextTile = nextTiles !! 0
+          path = followTileKeepPath tg randomNextTile startTile startTile (DS.fromList [startTile])
           turnCounter = addTurnMovingFromTo startTile randomNextTile TurnCounter { rightTurns = 0, leftTurns = 0}
+          perimeter = findInnerAreaPerimeterExcludePath tg randomNextTile startTile startTile path turnCounter (emptyGcc)
 
-answerQuestionDayTen' :: String -> DS.Set TileCell
+findAllNonPathTilesInArea :: TileGrid -> DS.Set TileCell -> DS.Set TileCell -> Int
+findAllNonPathTilesInArea tg path tiles = length inAreaNotPathCoords
+    where coordsTiles = DS.map (\t -> coords t) tiles
+          minX = minimum $ DS.map (\c -> x c) $ coordsTiles
+          maxX = maximum $ DS.map (\c -> x c) $ coordsTiles
+          minY = minimum $ DS.map (\c -> y c) $ coordsTiles
+          maxY = maximum $ DS.map (\c -> y c) $ coordsTiles
+          mostNortWestCoords = Coords { x = minX, y = minY }
+          mostNortEastCoords = Coords { x = maxX, y = minY }
+          mostSouthWestCoords = Coords { x = minX, y = maxY }
+          mostSouthEastCoords = Coords { x = maxX, y = maxY }
+          coordsGrid = concat $ map (\l -> map (\t -> coords t) l) tg
+          coordsPath = DS.map (\x -> coords x) path
+          inAreaCoords = DS.fromList $ filter (\c -> isInArea c minX maxX minY maxY) coordsGrid
+          inAreaNotPathCoords = DS.filter (\c -> not $ DS.member c coordsPath) inAreaCoords
+
+isInArea :: Coords -> Int -> Int -> Int -> Int -> Bool
+isInArea cs minX maxX minY maxY = (&&) ((&&) (cx <= maxX) (cy <= maxY)) ((&&) (cx >= minX) (cy >= minY))
+    where cx = x cs
+          cy = y cs
+
+answerQuestionDayTen' :: String -> Int
 answerQuestionDayTen' inputText = startFindAreaPerimeter $ parseGridFromInputText inputText
+
+findInnerAreaPerimeterExcludePath :: TileGrid -> TileCell -> TileCell -> TileCell -> DS.Set TileCell -> TurnCounter -> GroundCellContainers -> DS.Set TileCell
+findInnerAreaPerimeterExcludePath gc currentTile previousTile target path turnCounter gcc
+    | nextTile == target = extractInnerSet newTurnCounter gcc
+--    | otherwise = trace ("\n\n############\n" ++ " previous: " ++ (show previousTile) ++ " current: " ++ (show currentTile) ++ " ----> " ++ (show nextTile) ++ "\ngcc " ++ (show newGcc) ++ "\ntCounter " ++ (show newTurnCounter)) findInnerAreaPerimeterExcludePath gc nextTile currentTile target path newTurnCounter newGcc
+    | otherwise = findInnerAreaPerimeterExcludePath gc nextTile currentTile target path newTurnCounter newGcc
+    where connTiles = filter (\ct -> ct /= previousTile) $ getConnectedTiles gc currentTile
+          nextTile = head $ connTiles
+          neighbourCellsContainer = collectNonPathTiles gc currentTile path
+          newGcc = selectGroundTiles currentTile nextTile neighbourCellsContainer gcc
+          newTurnCounter = addTurnMovingFromTo currentTile nextTile turnCounter
 
 findInnerAreaPerimeter :: TileGrid -> TileCell -> TileCell -> TileCell -> TurnCounter -> GroundCellContainers -> DS.Set TileCell
 findInnerAreaPerimeter gc currentTile previousTile target turnCounter gcc
@@ -152,8 +193,8 @@ findInnerAreaPerimeter gc currentTile previousTile target turnCounter gcc
 --    | otherwise = trace ("\n\n############\n" ++ " previous: " ++ (show previousTile) ++ " current: " ++ (show currentTile) ++ " ----> " ++ (show nextTile) ++ "\ngcc " ++ (show newGcc) ++ "\ntCounter " ++ (show newTurnCounter)) findInnerAreaPerimeter gc nextTile currentTile target newTurnCounter newGcc
     | otherwise = findInnerAreaPerimeter gc nextTile currentTile target newTurnCounter newGcc
     where connTiles = filter (\ct -> ct /= previousTile) $ getConnectedTiles gc currentTile
-          nextTile = trace ("From currentTile: " ++ (show currentTile) ++ "Connected tiles: " ++ (show connTiles)) head $ connTiles
-          neighbourCellsContainer = collectGroundTiles gc currentTile
+          nextTile = head $ connTiles
+          neighbourCellsContainer = collectNonPathTiles gc currentTile (DS.fromList [])
           newGcc = selectGroundTiles currentTile nextTile neighbourCellsContainer gcc
           newTurnCounter = addTurnMovingFromTo currentTile nextTile turnCounter
 
@@ -185,16 +226,22 @@ keepIfTileCellGround maybeTc
   | isTileCellGround maybeTc = maybeTc
   | otherwise = Nothing
 
-collectGroundTiles :: TileGrid -> TileCell -> NeighboursCellContainer
-collectGroundTiles tg tc = NeighboursCellContainer {
-            n = keepIfTileCellGround $ if' (tileCellContainsDirection tc N) Nothing (getTileCell tg (generateCoords ctc N)),
-            s = keepIfTileCellGround $ if' (tileCellContainsDirection tc S) Nothing (getTileCell tg (generateCoords ctc S)),
-            w = keepIfTileCellGround $ if' (tileCellContainsDirection tc W) Nothing (getTileCell tg (generateCoords ctc W)),
-            e = keepIfTileCellGround $ if' (tileCellContainsDirection tc E) Nothing (getTileCell tg (generateCoords ctc E)),
-            ne = keepIfTileCellGround $ getNorthEastCell tg (Just tc),
-            nw = keepIfTileCellGround $ getNorthWestCell tg (Just tc),
-            se = keepIfTileCellGround $ getSouthEastCell tg (Just tc),
-            sw = keepIfTileCellGround $ getSouthWestCell tg (Just tc)
+ifInSetDontGoThrough :: (Ord a) => DS.Set a -> Maybe a -> Maybe a
+ifInSetDontGoThrough _ Nothing = Nothing
+ifInSetDontGoThrough setA (Just a)
+    | DS.member a setA = Nothing
+    | otherwise = Just a
+
+collectNonPathTiles :: TileGrid -> TileCell -> DS.Set TileCell -> NeighboursCellContainer
+collectNonPathTiles tg tc path = NeighboursCellContainer {
+            n = ifInSetDontGoThrough path $ if' (tileCellContainsDirection tc N) Nothing (getTileCell tg (generateCoords ctc N)),
+            s = ifInSetDontGoThrough path $ if' (tileCellContainsDirection tc S) Nothing (getTileCell tg (generateCoords ctc S)),
+            w = ifInSetDontGoThrough path $ if' (tileCellContainsDirection tc W) Nothing (getTileCell tg (generateCoords ctc W)),
+            e = ifInSetDontGoThrough path $ if' (tileCellContainsDirection tc E) Nothing (getTileCell tg (generateCoords ctc E)),
+            ne = ifInSetDontGoThrough path $ getNorthEastCell tg (Just tc),
+            nw = ifInSetDontGoThrough path $ getNorthWestCell tg (Just tc),
+            se = ifInSetDontGoThrough path $ getSouthEastCell tg (Just tc),
+            sw = ifInSetDontGoThrough path $ getSouthWestCell tg (Just tc)
           }
           where ctc = coords tc
 
@@ -264,7 +311,8 @@ handleDirection t (Just d) groupA groupB gcc
 
 
 addCellsToBothParts :: [TileCell] -> Side -> [TileCell] -> Side -> GroundCellContainers -> GroundCellContainers
-addCellsToBothParts groupA s groupB s' gcc = trace ("Aggiungo " ++ (show $ length groupA) ++ " a " ++ (show s) ++ " e " ++ (show $ length groupB) ++ " a " ++ (show s')) addCellsToGroundContainer groupB s' $ addCellsToGroundContainer groupA s gcc
+addCellsToBothParts groupA s groupB s' gcc = addCellsToGroundContainer groupB s' $ addCellsToGroundContainer groupA s gcc
+--addCellsToBothParts groupA s groupB s' gcc = trace ("Aggiungo " ++ (show $ length groupA) ++ " a " ++ (show s) ++ " e " ++ (show $ length groupB) ++ " a " ++ (show s')) addCellsToGroundContainer groupB s' $ addCellsToGroundContainer groupA s gcc
 
 if' :: Bool -> a -> a -> a
 if' True  x _ = x
