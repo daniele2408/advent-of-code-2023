@@ -71,6 +71,28 @@ testGetPerimeter = TestCase(do
                 let gc = parseGridFromInputText inputText
                 let Just tc = getTileCell gc Coords { x = 2, y = 2 }
                 assertEqual "" (fromList [tc]) (startFindAreaPerimeter gc)
+                assertEqual "" 1 (length $ startFindAreaPerimeter gc)
+    )
+
+testGetPerimeterBis = TestCase(do
+                inputText <- readFile "./resources/sample/inputday10bis.txt"
+                let gc = parseGridFromInputText inputText
+                assertEqual "" 4 (length $ startFindAreaPerimeter gc)
+    )
+
+testGetPerimeterTris = TestCase(do
+                inputText <- readFile "./resources/sample/inputday10tris.txt"
+                let gc = parseGridFromInputText inputText
+                assertEqual "" 4 (length $ startFindAreaPerimeter gc)
+    )
+
+testCheckGetConnected = TestCase(do
+                inputText <- readFile "./resources/sample/inputday10tris.txt"
+                let gc = parseGridFromInputText inputText
+                let Just previousTile = getTileCell gc Coords { x = 7, y = 1 }
+                let Just tc = getTileCell gc Coords { x = 8, y = 1 }
+                let Just nextTile = getTileCell gc Coords { x = 9, y = 1 }
+                assertEqual "" nextTile (head $ Prelude.take 1 $ Prelude.filter (\ct -> ct /= previousTile) $ getConnectedTiles gc tc)
     )
 
 allTests = TestList [
@@ -79,4 +101,10 @@ allTests = TestList [
     TestLabel "testCollectGroundTiles" testCollectGroundTiles,
     TestLabel "testGetTileDirection" testGetTileDirection,
     TestLabel "testWhichDirection" testWhichDirection
+    ]
+
+testPerimeter = TestList [
+    TestLabel "testGetPerimeter" testGetPerimeter,
+    TestLabel "testGetPerimeterBis" testGetPerimeterBis,
+    TestLabel "testGetPerimeterTris" testGetPerimeterTris
     ]

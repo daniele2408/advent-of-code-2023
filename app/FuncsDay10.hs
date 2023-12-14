@@ -38,8 +38,8 @@ followTile gc currentTile previousTile target steps
 
 areCoordsInBound :: TileGrid -> Coords -> Bool
 areCoordsInBound tg cs = (&&) (maxX >= (x cs)) (maxY >= (y cs))
-    where maxX = (length tg) - 1
-          maxY = (length $ tg !! 0) - 1
+    where maxY = (length tg) - 1
+          maxX = (length $ tg !! 0) - 1
 
 getTileCell :: TileGrid -> Coords -> Maybe TileCell
 getTileCell tg cs
@@ -47,8 +47,8 @@ getTileCell tg cs
     | (||) ((x cs) > maxX) ((y cs) > maxY) = Nothing
     | areCoordsInBound tg cs = Just $  (tg !! (y cs)) !! (x cs)
     | otherwise = Nothing
-    where maxX = (length tg) - 1
-          maxY = (length $ tg !! 0) - 1
+    where maxY = (length tg) - 1
+          maxX = (length $ tg !! 0) - 1
 
 peekDirection :: TileGrid -> TileCell -> Direction -> Maybe TileCell
 peekDirection tg tc d
@@ -73,8 +73,8 @@ getNeighbourTiles tg tl = accumulateJustsFromMaybes (map (\cs -> getTileCell tg 
     where cs = coords tl
           csX = x cs
           csY = y cs
-          maxX = (length tg) - 1
-          maxY = (length $ tg !! 0) - 1
+          maxY = (length tg) - 1
+          maxX = (length $ tg !! 0) - 1
           startX = max 0 (csX-1)
           endX = min (csX+1) maxX
           startY = max 0 (csY-1)
@@ -149,8 +149,10 @@ answerQuestionDayTen' inputText = startFindAreaPerimeter $ parseGridFromInputTex
 findInnerAreaPerimeter :: TileGrid -> TileCell -> TileCell -> TileCell -> TurnCounter -> GroundCellContainers -> DS.Set TileCell
 findInnerAreaPerimeter gc currentTile previousTile target turnCounter gcc
     | nextTile == target = extractInnerSet newTurnCounter gcc
-    | otherwise = trace ("\n\n############\n" ++ " previous: " ++ (show previousTile) ++ " current: " ++ (show currentTile) ++ " ----> " ++ (show nextTile) ++ "\ngcc " ++ (show newGcc) ++ "\ntCounter " ++ (show newTurnCounter)) findInnerAreaPerimeter gc nextTile currentTile target newTurnCounter newGcc
-    where nextTile = head $ filter (\ct -> ct /= previousTile) $ getConnectedTiles gc currentTile
+--    | otherwise = trace ("\n\n############\n" ++ " previous: " ++ (show previousTile) ++ " current: " ++ (show currentTile) ++ " ----> " ++ (show nextTile) ++ "\ngcc " ++ (show newGcc) ++ "\ntCounter " ++ (show newTurnCounter)) findInnerAreaPerimeter gc nextTile currentTile target newTurnCounter newGcc
+    | otherwise = findInnerAreaPerimeter gc nextTile currentTile target newTurnCounter newGcc
+    where connTiles = filter (\ct -> ct /= previousTile) $ getConnectedTiles gc currentTile
+          nextTile = trace ("From currentTile: " ++ (show currentTile) ++ "Connected tiles: " ++ (show connTiles)) head $ connTiles
           neighbourCellsContainer = collectGroundTiles gc currentTile
           newGcc = selectGroundTiles currentTile nextTile neighbourCellsContainer gcc
           newTurnCounter = addTurnMovingFromTo currentTile nextTile turnCounter
@@ -237,7 +239,8 @@ selectGroundTiles tc tcNext ncc gcc
 distributeCells :: TileCell -> TileCell -> [Maybe TileCell] -> [Maybe TileCell] -> GroundCellContainers -> GroundCellContainers
 distributeCells tc tcNext groupMaybeA groupMaybeB gcc
   | d == Nothing = error "Couldn't assess where next tile is!"
-  | otherwise = trace ("Current tile " ++ (show tc) ++ " è a " ++ (show d) ++ " della nextTile " ++ (show tcNext) ++ " GROUP A: " ++ (show groupA) ++ " GROUP B: " ++ (show groupB)) handleDirection (tile tc) d groupA groupB gcc
+--  | otherwise = trace ("Current tile " ++ (show tc) ++ " è a " ++ (show d) ++ " della nextTile " ++ (show tcNext) ++ " GROUP A: " ++ (show groupA) ++ " GROUP B: " ++ (show groupB)) handleDirection (tile tc) d groupA groupB gcc
+  | otherwise = handleDirection (tile tc) d groupA groupB gcc
   where d = whichDirectionIsTile tc tcNext
         groupA = accumulateJustsFromMaybes  groupMaybeA []
         groupB = accumulateJustsFromMaybes  groupMaybeB []
