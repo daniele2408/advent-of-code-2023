@@ -13,7 +13,7 @@ testcollectNonPathTiles = TestCase(do
     let Just nextTc = getTileCell gc Coords { x = 3, y = 1}
     let path = followTileKeepPath gc tc nextTc nextTc (fromList [])
     let ncc = collectNonPathTiles gc tc path
-    let gcc = selectGroundTiles tc nextTc ncc emptyGcc
+    let gcc = distributeCellsToContainerPockets tc nextTc ncc emptyGcc
     let tot = (length $ left gcc) + (length $ right gcc)
     assertEqual "" 4 tot
   )
@@ -71,31 +71,31 @@ testGetPerimeter = TestCase(do
                 inputText <- readFile "./resources/sample/inputday10.txt"
                 let gc = parseGridFromInputText inputText
                 let Just tc = getTileCell gc Coords { x = 2, y = 2 }
-                assertEqual "" 1 (startFindAreaPerimeter gc)
+                assertEqual "" 1 (countInnerTiles gc)
     )
 
 testGetPerimeterBis = TestCase(do
                 inputText <- readFile "./resources/sample/inputday10bis.txt"
                 let gc = parseGridFromInputText inputText
-                assertEqual "" 4 (startFindAreaPerimeter gc)
+                assertEqual "" 4 (countInnerTiles gc)
     )
 
 testGetPerimeterTris = TestCase(do
                 inputText <- readFile "./resources/sample/inputday10tris.txt"
                 let gc = parseGridFromInputText inputText
-                assertEqual "" 4 (startFindAreaPerimeter gc)
+                assertEqual "" 4 (countInnerTiles gc)
     )
 
 testGetPerimeterQuater = TestCase(do
                 inputText <- readFile "./resources/sample/inputday10quater.txt"
                 let gc = parseGridFromInputText inputText
-                assertEqual "" 8 (startFindAreaPerimeter gc)
+                assertEqual "" 8 (countInnerTiles gc)
     )
 
 testGetPerimeterQuinquies = TestCase(do
                 inputText <- readFile "./resources/sample/inputday10quinquies.txt"
                 let gc = parseGridFromInputText inputText
-                assertEqual "" 10 (startFindAreaPerimeter gc)
+                assertEqual "" 10 (countInnerTiles gc)
     )
 
 testCheckGetConnected = TestCase(do
