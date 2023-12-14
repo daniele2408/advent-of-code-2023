@@ -57,3 +57,8 @@ main = do
     inputText9 <- readFile "./resources/inputday9.txt"
     putStrLn $ ">>> " ++ (show $ answerQuestionDayNine inputText9)
     putStrLn $ ">>> " ++ (show $ answerQuestionDayNine' inputText9)
+
+    putStrLn $ ">>>>>>>>>>>>>>> DAY 10 <<<<<<<<<<<<<<<"
+    inputText10 <- readFile "./resources/inputday10.txt"
+    putStrLn $ ">>> " ++ (show $ answerQuestionDayTen inputText10)
+    putStrLn $ ">>> " ++ (show $ answerQuestionDayTen' inputText10)
