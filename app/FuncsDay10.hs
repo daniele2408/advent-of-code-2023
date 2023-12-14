@@ -31,6 +31,22 @@ data CellContainers = CellContainers {
 emptyGcc :: CellContainers
 emptyGcc = CellContainers { left = DS.fromList [], right = DS.fromList [] }
 
+data TurnCounter = TurnCounter {
+  rightTurns :: Int,
+  leftTurns :: Int
+} deriving (Show, Eq)
+
+data NeighboursCellContainer = NeighboursCellContainer {
+  n :: Maybe TileCell,
+  s :: Maybe TileCell,
+  w :: Maybe TileCell,
+  e :: Maybe TileCell,
+  ne :: Maybe TileCell,
+  nw :: Maybe TileCell,
+  se :: Maybe TileCell,
+  sw :: Maybe TileCell
+} deriving (Show)
+
 -- ################## ANSWER 1 ##################
 
 answerQuestionDayTen :: String -> Int
@@ -219,6 +235,11 @@ collectNonPathTiles tg tc path = NeighboursCellContainer {
           }
           where ctc = coords tc
 
+-- auxiliary function to have a conditional ternary operator
+if' :: Bool -> a -> a -> a
+if' True  x _ = x
+if' False _ y = y
+
 -- auxiliary function, keep a maybe value if its value it's NOT in a Set of actual values
 ifInSetDontGoThrough :: (Ord a) => DS.Set a -> Maybe a -> Maybe a
 ifInSetDontGoThrough _ Nothing = Nothing
@@ -327,34 +348,9 @@ addToGroundContainer t s gcc
     | s == L = CellContainers { left = (DS.insert t (left gcc)), right = (right gcc) }
     | s == R = CellContainers { left = (left gcc), right = (DS.insert t (right gcc)) }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+-- given a grid, a path (as set of tiles) and an area inner to the path,
+-- get the 4 most outwards points of the last area and filter tiles inside of it
+-- keeping the ones NOT being on the path
 findAllNonPathTilesInArea :: TileGrid -> DS.Set TileCell -> DS.Set TileCell -> Int
 findAllNonPathTilesInArea tg path tiles = length inAreaNotPathCoords
     where coordsTiles = DS.map (\t -> coords t) tiles
@@ -371,89 +367,29 @@ findAllNonPathTilesInArea tg path tiles = length inAreaNotPathCoords
           inAreaCoords = DS.fromList $ filter (\c -> isInArea c minX maxX minY maxY) coordsGrid
           inAreaNotPathCoords = DS.filter (\c -> not $ DS.member c coordsPath) inAreaCoords
 
+-- check if coords are inside a square located by its corner points
 isInArea :: Coords -> Int -> Int -> Int -> Int -> Bool
 isInArea cs minX maxX minY maxY = (&&) ((&&) (cx <= maxX) (cy <= maxY)) ((&&) (cx >= minX) (cy >= minY))
     where cx = x cs
           cy = y cs
 
-
-
-
-
-findInnerAreaPerimeter :: TileGrid -> TileCell -> TileCell -> TileCell -> TurnCounter -> CellContainers -> DS.Set TileCell
-findInnerAreaPerimeter gc currentTile previousTile target turnCounter gcc
-    | nextTile == target = extractInnerSet newTurnCounter gcc
-    | otherwise = findInnerAreaPerimeter gc nextTile currentTile target newTurnCounter newGcc
-    where connTiles = filter (\ct -> ct /= previousTile) $ getConnectedTiles gc currentTile
-          nextTile = head $ connTiles
-          neighbourCellsContainer = collectNonPathTiles gc currentTile (DS.fromList [])
-          newGcc = distributeCellsToContainerPockets currentTile nextTile neighbourCellsContainer gcc
-          newTurnCounter = addTurnMovingFromTo currentTile nextTile turnCounter
-
+-- I'll select one pocket (or another) of tiles I've been storing based on the direction of the loop I've been following
 extractInnerSet :: TurnCounter -> CellContainers -> DS.Set TileCell
 extractInnerSet tCounter gcc
   | isClockWise tCounter = right gcc
   | otherwise = left gcc
 
-
-
-
-
-getTileCellIfGround :: TileGrid -> TileCell -> Direction -> Maybe TileCell
-getTileCellIfGround tg tc d
-    | maybeNextTileCell == Nothing = Nothing
-    | isTileCellGround maybeNextTileCell = maybeNextTileCell
-    where maybeNextTileCell = getTileCell tg (generateCoords (coords tc) d)
-
-isTileCellGround :: Maybe TileCell -> Bool
-isTileCellGround Nothing = False
-isTileCellGround (Just tc) = (fst $ tile tc) == NONE
-
-keepIfTileCellGround :: Maybe TileCell -> Maybe TileCell
-keepIfTileCellGround maybeTc
-  | isTileCellGround maybeTc = maybeTc
-  | otherwise = Nothing
-
-
-
-
-
-data TurnCounter = TurnCounter {
-  rightTurns :: Int,
-  leftTurns :: Int
-} deriving (Show, Eq)
-
-
-
-
+-- add right/left turn to TurnCounter to increment its count
 addTurn :: Side -> TurnCounter -> TurnCounter
 addTurn s tc
   | s == L = TurnCounter { rightTurns = (rightTurns tc), leftTurns = ((+1) $ leftTurns tc)}
   | s == R = TurnCounter { rightTurns = ((+1) $ rightTurns tc), leftTurns = (leftTurns tc)}
 
+-- the intuition behind this is: if I made more right turns than left I've been looping clock-wise , and vice-versa.
 isClockWise :: TurnCounter -> Bool
 isClockWise tc = (rightTurns tc) > (leftTurns tc)
 
-
-
-
-if' :: Bool -> a -> a -> a
-if' True  x _ = x
-if' False _ y = y
-
-data NeighboursCellContainer = NeighboursCellContainer {
-  n :: Maybe TileCell,
-  s :: Maybe TileCell,
-  w :: Maybe TileCell,
-  e :: Maybe TileCell,
-  ne :: Maybe TileCell,
-  nw :: Maybe TileCell,
-  se :: Maybe TileCell,
-  sw :: Maybe TileCell
-} deriving (Show)
-
-
-
+-- auxiliary functions to parse symbols from input
 parseTileFromChar :: Char -> Int -> Int -> TileCell
 parseTileFromChar c y x
     | c == '|' = TileCell { tile = (N, S), coords = coords }
@@ -473,4 +409,3 @@ parseTileRowFromLine l y = map (\p -> parseTileFromChar (snd p) y (fst p)) $ zip
 parseGridFromInputText :: String -> TileGrid
 parseGridFromInputText inputText = map (\p -> parseTileRowFromLine (snd p) (fst p)) $ zip [0..((length ls)-1)] ls
     where ls = lines inputText
-

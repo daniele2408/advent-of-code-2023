@@ -10,6 +10,7 @@ import FuncsDay7
 import qualified FuncsDay7Answer2 as FDSEVEN
 import FuncsDay8
 import FuncsDay9
+import FuncsDay10
 
 main :: IO ()
 main = do
