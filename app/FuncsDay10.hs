@@ -8,8 +8,6 @@ import CommonFuncs
 import Data.Maybe
 import qualified Data.Set as DS
 
-import Debug.Trace
-
 data Direction = N | S | E | W | NONE | START deriving (Show, Eq, Ord)
 type Tile = (Direction, Direction)
 
@@ -139,7 +137,6 @@ emptyGcc = GroundCellContainers { left = DS.fromList [], right = DS.fromList [] 
 followTileKeepPath :: TileGrid -> TileCell -> TileCell -> TileCell -> DS.Set TileCell -> DS.Set TileCell
 followTileKeepPath gc currentTile previousTile target acc
     | nextTile == target = (DS.insert currentTile $ DS.insert previousTile acc)
---    | otherwise = trace ((show previousTile) ++ " --> " ++ (show currentTile) ++ " il sacco ha " ++ (show $ length acc) ++ " elementi") followTileKeepPath gc nextTile currentTile target (DS.insert previousTile acc)
     | otherwise = followTileKeepPath gc nextTile currentTile target (DS.insert previousTile acc)
     where nextTile = head $ filter (\ct -> ct /= previousTile) $ getConnectedTiles gc currentTile
 
@@ -179,7 +176,6 @@ answerQuestionDayTen' inputText = startFindAreaPerimeter $ parseGridFromInputTex
 findInnerAreaPerimeterExcludePath :: TileGrid -> TileCell -> TileCell -> TileCell -> DS.Set TileCell -> TurnCounter -> GroundCellContainers -> DS.Set TileCell
 findInnerAreaPerimeterExcludePath gc currentTile previousTile target path turnCounter gcc
     | nextTile == target = extractInnerSet newTurnCounter gcc
---    | otherwise = trace ("\n\n############\n" ++ " previous: " ++ (show previousTile) ++ " current: " ++ (show currentTile) ++ " ----> " ++ (show nextTile) ++ "\ngcc " ++ (show newGcc) ++ "\ntCounter " ++ (show newTurnCounter)) findInnerAreaPerimeterExcludePath gc nextTile currentTile target path newTurnCounter newGcc
     | otherwise = findInnerAreaPerimeterExcludePath gc nextTile currentTile target path newTurnCounter newGcc
     where connTiles = filter (\ct -> ct /= previousTile) $ getConnectedTiles gc currentTile
           nextTile = head $ connTiles
@@ -190,7 +186,6 @@ findInnerAreaPerimeterExcludePath gc currentTile previousTile target path turnCo
 findInnerAreaPerimeter :: TileGrid -> TileCell -> TileCell -> TileCell -> TurnCounter -> GroundCellContainers -> DS.Set TileCell
 findInnerAreaPerimeter gc currentTile previousTile target turnCounter gcc
     | nextTile == target = extractInnerSet newTurnCounter gcc
---    | otherwise = trace ("\n\n############\n" ++ " previous: " ++ (show previousTile) ++ " current: " ++ (show currentTile) ++ " ----> " ++ (show nextTile) ++ "\ngcc " ++ (show newGcc) ++ "\ntCounter " ++ (show newTurnCounter)) findInnerAreaPerimeter gc nextTile currentTile target newTurnCounter newGcc
     | otherwise = findInnerAreaPerimeter gc nextTile currentTile target newTurnCounter newGcc
     where connTiles = filter (\ct -> ct /= previousTile) $ getConnectedTiles gc currentTile
           nextTile = head $ connTiles
@@ -200,8 +195,8 @@ findInnerAreaPerimeter gc currentTile previousTile target turnCounter gcc
 
 extractInnerSet :: TurnCounter -> GroundCellContainers -> DS.Set TileCell
 extractInnerSet tCounter gcc
-  | isClockWise tCounter = trace ((show tCounter) ++ " Is clockwise, getting right! ") right gcc
-  | otherwise = trace ((show tCounter) ++ " Is anti-clockwise, getting left! ") left gcc
+  | isClockWise tCounter = right gcc
+  | otherwise = left gcc
 
 addCellsToGroundContainer :: [TileCell] -> Side -> GroundCellContainers -> GroundCellContainers
 addCellsToGroundContainer ts s gcc = foldl (\acc t -> (addToGroundContainer t s acc)) gcc ts
@@ -286,7 +281,6 @@ selectGroundTiles tc tcNext ncc gcc
 distributeCells :: TileCell -> TileCell -> [Maybe TileCell] -> [Maybe TileCell] -> GroundCellContainers -> GroundCellContainers
 distributeCells tc tcNext groupMaybeA groupMaybeB gcc
   | d == Nothing = error "Couldn't assess where next tile is!"
---  | otherwise = trace ("Current tile " ++ (show tc) ++ " è a " ++ (show d) ++ " della nextTile " ++ (show tcNext) ++ " GROUP A: " ++ (show groupA) ++ " GROUP B: " ++ (show groupB)) handleDirection (tile tc) d groupA groupB gcc
   | otherwise = handleDirection (tile tc) d groupA groupB gcc
   where d = whichDirectionIsTile tc tcNext
         groupA = accumulateJustsFromMaybes  groupMaybeA []
@@ -312,7 +306,6 @@ handleDirection t (Just d) groupA groupB gcc
 
 addCellsToBothParts :: [TileCell] -> Side -> [TileCell] -> Side -> GroundCellContainers -> GroundCellContainers
 addCellsToBothParts groupA s groupB s' gcc = addCellsToGroundContainer groupB s' $ addCellsToGroundContainer groupA s gcc
---addCellsToBothParts groupA s groupB s' gcc = trace ("Aggiungo " ++ (show $ length groupA) ++ " a " ++ (show s) ++ " e " ++ (show $ length groupB) ++ " a " ++ (show s')) addCellsToGroundContainer groupB s' $ addCellsToGroundContainer groupA s gcc
 
 if' :: Bool -> a -> a -> a
 if' True  x _ = x

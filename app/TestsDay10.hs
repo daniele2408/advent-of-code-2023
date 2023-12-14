@@ -107,6 +107,16 @@ testCheckGetConnected = TestCase(do
                 assertEqual "" nextTile (head $ Prelude.take 1 $ Prelude.filter (\ct -> ct /= previousTile) $ getConnectedTiles gc tc)
     )
 
+testAnswer1 = TestCase(do
+                inputText <- readFile "./resources/inputday10.txt"
+                assertEqual "" 6942 (answerQuestionDayTen inputText)
+    )
+
+testAnswer2 = TestCase(do
+                inputText <- readFile "./resources/inputday10.txt"
+                assertEqual "" 297 (answerQuestionDayTen' inputText)
+    )
+
 allTests = TestList [
     TestLabel "turnCounter" testTurnCounter,
     TestLabel "testAddTurn" testAddTurn,
