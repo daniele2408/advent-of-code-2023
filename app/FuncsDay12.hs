@@ -12,10 +12,10 @@ type SpringRecordSymbols = [Status]
 data SpringRecord = SpringRecord { num :: SpringRecordNumeric, sym :: SpringRecordSymbols } deriving (Show, Eq)
 
 instance Show SpringRecordSymbols where
-  show srs = show $ foldl (\acc x -> acc ++ x) "" [(map (\s -> statusAsChar s) srs)]
+  show srs = foldl (\acc x -> acc ++ x) [] [(map (\s -> statusAsChar s) srs)]
 
 instance Show SpringRecordNumeric where
-  show srn = show $ joinStrings (map (\d -> show d) srn) ',' ""
+  show srn = joinStrings (map (\d -> show d) srn) ',' ""
 
 parseSpringRecordNumeric :: String -> SpringRecordNumeric
 parseSpringRecordNumeric s = map (\c -> convertStrToInt c) $ splitStringByAndStripWhiteSpaces "," s
@@ -44,5 +44,5 @@ parseInput :: String -> [SpringRecord]
 parseInput inputText = map (\l -> parseLineRecord l) $ lines inputText
 
 areRecordsConsistent :: SpringRecordNumeric -> SpringRecordSymbols -> Bool
-areRecordsConsistent srn srs =  (map (\g -> length g) $ splitStringByAndStripWhiteSpaces "." srsString) == srn
+areRecordsConsistent srn srs =  (map (\g -> length g) $ filter (\c -> c /= "") $ splitStringByAndStripWhiteSpaces "." srsString) == srn
     where srsString = show srs

@@ -21,7 +21,9 @@ testParseLine = TestCase(do
 testConsistencyRecords = TestCase(do
       let symRec = parseSpringRecordSymbols "#....######..#####."
       let numRec = parseSpringRecordNumeric "1,6,5"
+      let numRec2 = parseSpringRecordNumeric "1,4,5"
 
       assertEqual "" True (areRecordsConsistent numRec symRec)
+      assertEqual "" False (areRecordsConsistent numRec2 symRec)
 
   )
