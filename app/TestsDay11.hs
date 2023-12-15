@@ -1,4 +1,4 @@
-module TestsDay10 where
+module TestsDay11 where
 
 import Test.HUnit
 import qualified Data.Set as DS

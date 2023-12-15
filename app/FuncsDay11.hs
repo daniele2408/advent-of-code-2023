@@ -74,10 +74,6 @@ expandUniverse u = deeperUniverse
           newVoidStripe = take newMaxWidth $ repeat (deFiatContent Void)
           deeperUniverse = fiatLux $ joinStrings (iterativeInsertIntPositions voidRowPos newVoidStripe $ defiatUniverse largerUniverse) '\n' ""
 
-joinStrings :: [String] -> Char -> String -> String
-joinStrings [] c acc = acc
-joinStrings (x:xs) c acc = joinStrings xs c (acc ++ x ++ [c])
-
 defiatUniverse :: Universe -> [String]
 defiatUniverse u = map (\stripe -> cellStripeAsString stripe) u
 

@@ -79,3 +79,7 @@ accumulateJustsFromMaybes :: [Maybe a] -> [a] -> [a]
 accumulateJustsFromMaybes [] acc = acc
 accumulateJustsFromMaybes ((Just x):xs) acc = accumulateJustsFromMaybes xs (x:acc)
 accumulateJustsFromMaybes (Nothing:xs) acc = accumulateJustsFromMaybes xs acc
+
+joinStrings :: [String] -> Char -> String -> String
+joinStrings [] c acc = acc
+joinStrings (x:xs) c acc = joinStrings xs c (acc ++ x ++ [c])
