@@ -29,9 +29,6 @@ fiatLux inputText = map (\p -> fiatCellStripe (snd p) (fst p)) $ filter (\l -> (
 fiatCellStripe :: String -> Int -> CellStripe
 fiatCellStripe l y = map (\p -> fiatCell (snd p) (Coords { x = (fst p), y = y })) $ listWithIndex l
 
-listWithIndex :: [a] -> [(Int, a)]
-listWithIndex xs = zip [0..((length xs)-1)] xs
-
 fiatCell :: Char -> Coords -> Cell
 fiatCell s c
     | s == '#' = Cell { coords = c , value = Galaxy }

@@ -83,3 +83,6 @@ accumulateJustsFromMaybes (Nothing:xs) acc = accumulateJustsFromMaybes xs acc
 joinStrings :: [String] -> Char -> String -> String
 joinStrings [] c acc = acc
 joinStrings (x:xs) c acc = joinStrings xs c (acc ++ x ++ [c])
+
+listWithIndex :: [a] -> [(Int, a)]
+listWithIndex xs = zip [0..((length xs)-1)] xs
