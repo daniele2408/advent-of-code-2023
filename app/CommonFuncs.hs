@@ -86,3 +86,23 @@ joinStrings (x:xs) c acc = joinStrings xs c (acc ++ x ++ [c])
 
 listWithIndex :: [a] -> [(Int, a)]
 listWithIndex xs = zip [0..((length xs)-1)] xs
+
+pairwise :: [a] -> [(a, a)]
+pairwise xs = zip xs (tail xs)
+
+listPairWiseOutwardPositions :: [a] -> Int -> [(Int,Int)]
+listPairWiseOutwardPositions l pos = zip [pos, (pos-1) .. 0] [(pos+1) .. ((length l) - 1)]
+
+replaceAtIndex :: Int -> a -> [a] -> [a]
+replaceAtIndex i newVal lst = take i lst ++ [newVal] ++ drop (i + 1) lst
+
+indexOf :: (Eq a) => a -> [a] -> Int
+indexOf value ls
+    | res == [] = -1
+    | otherwise = fst $ head res
+    where res = filter (\p -> value == (snd p)) $ listWithIndex ls
+
+generateUniquePairs :: [a] -> [(a, a)] -> [(a, a)]
+generateUniquePairs [] acc = acc
+generateUniquePairs (x:xs) acc = generateUniquePairs xs (combos ++ acc)
+  where combos = map (\e -> (x,e)) xs

@@ -90,11 +90,6 @@ isGalaxy c = (value c) == Galaxy
 extractGalaxyCatalog :: Universe -> CellCatalog
 extractGalaxyCatalog u = listWithIndex $ filter (\c -> isGalaxy c) $ concat u
 
-generateUniquePairs :: [a] -> [(a, a)] -> [(a, a)]
-generateUniquePairs [] acc = acc
-generateUniquePairs (x:xs) acc = generateUniquePairs xs (combos ++ acc)
-  where combos = map (\e -> (x,e)) xs
-
 getCell :: Universe -> Coords -> Maybe Cell
 getCell u cs
     | (||) (cx < 0) (cx > maxX) = Nothing
