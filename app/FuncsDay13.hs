@@ -65,18 +65,6 @@ computeScore rd = (pH * 100) + pV
     where pH = (+ 1) $ posH rd
           pV = (+ 1) $ posV rd
 
---removeSmudgesFromGrid :: Grid -> Grid
---removeSmudgesFromGrid g
---    | sameRowPos == [] = g
---    | otherwise = replaceRowInGrid g (head sameRowPos)
---    where sameRowPos = findAllSameRowPos g
-
---removeSmudgesFromGrid :: Grid -> Grid
---removeSmudgesFromGrid g
---    | newGrid == g = handleReplaceGridRowPos (transpose g) $ findAllSameRowPos $ transpose g
---    | otherwise = newGrid
---    where newGrid = handleReplaceGridRowPos g $ findAllSameRowPos g
-
 handleReplaceGridRowPos :: Grid -> [Int] -> Grid
 handleReplaceGridRowPos g [] = g
 handleReplaceGridRowPos g xs = replaceRowInGridListPos g xs
@@ -87,12 +75,6 @@ replaceRowInGridListPos g (p:ps)
     | row == [] = replaceRowInGridListPos g ps
     | otherwise = replaceAtIndex posToReplace row g
     where (posToReplace, row) = extractDifferentRow g p
-
---replaceRowInGrid :: Grid -> Int -> Grid
---replaceRowInGrid g reflPos
---    | row == [] = g
---    | otherwise = replaceAtIndex posToReplace row g
---    where (posToReplace, row) = extractDifferentRow g reflPos
 
 removeSmudgesFromGrid :: Grid -> Int
 removeSmudgesFromGrid g =
