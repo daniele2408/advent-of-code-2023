@@ -6,6 +6,8 @@ import CommonFuncs
 import Data.List
 import Data.Char
 import Data.Maybe
+import Data.Map (Map)
+import qualified Data.Map as Map
 
 data TileContent = R | C | V deriving (Show, Eq)
 data Coords = Coords { x :: Int, y :: Int } deriving (Show, Eq)
@@ -18,12 +20,6 @@ instance Show Row where
 
 instance Show Grid where
   show g = joinStrings (map (\d -> show d) g) '\n' ""
-
---instance Show SpringRecordSymbols where
---  show srs = foldl (\acc x -> acc ++ x) [] [(map (\s -> statusAsChar s) srs)]
---
---instance Show SpringRecordNumeric where
---  show srn = joinStrings (map (\d -> show d) srn) ',' ""
 
 data Direction = N | S | W | E deriving (Show, Eq)
 
@@ -61,7 +57,15 @@ findAllRoundedRocks g = filter (\t -> (== R) $ content t) $ concat g
 
 moveAllRocks :: Direction -> Grid -> Grid
 moveAllRocks d g = moveAllRocksIterative g d rocks
-  where rocks = findAllRoundedRocks g
+  where rocks = findAllRounderRocksOrderedBy g d
+
+findAllRounderRocksOrderedBy :: Grid -> Direction -> [Tile]
+findAllRounderRocksOrderedBy g d
+  | d == N = findAllRoundedRocks g
+  | d == S = findAllRoundedRocks $ reverse g
+  | d == W = findAllRoundedRocks $ transpose g
+  | d == E = findAllRoundedRocks $ reverse $ transpose g
+  | otherwise = []
 
 moveAllRocksIterative :: Grid -> Direction -> [Tile] -> Grid
 moveAllRocksIterative g d [] = g
@@ -76,11 +80,10 @@ move g d t =
   where maybeEmptySpaceCoords = findFirstEmptySpace g d t
 
 replaceTileInGridAt :: Grid -> Coords -> Tile -> Grid
-replaceTileInGridAt g cs t = replaceRow g rowToReplace $ replaceTile rowToReplace tileToReplace t
+replaceTileInGridAt g cs t = replaceRow g rowToReplace $ replaceTile rowToReplace colPos rowPos t
   where rowPos = y cs
         colPos = x cs
         rowToReplace = g !! rowPos
-        tileToReplace = rowToReplace !! colPos
 
 vaporizeRock :: Grid -> Tile -> Grid
 vaporizeRock g t = replaceTileInGridAt g cs Tile { content = V, coords = cs}
@@ -92,11 +95,14 @@ replaceRow g oldRow row
   | otherwise = (take pos g) ++ [row] ++ (drop (pos+1) g)
   where pos = indexOf oldRow g
 
-replaceTile :: Row -> Tile -> Tile -> Row
-replaceTile row oldT t
-  | pos == -1 = error ("Couldn't find tile " ++ (show oldT) ++ " in row " ++ (show row))
-  | otherwise = (take pos row) ++ [t] ++ (drop (pos+1) row)
-  where pos = indexOf oldT row
+replaceTile :: Row -> Int -> Int -> Tile -> Row
+replaceTile row posX posY t
+  | posX == -1 = error ("Couldn't find tile in pos " ++ (show posX) ++ " in row " ++ (show row))
+  | otherwise = (take posX row) ++ [(setCoords t newCoords)] ++ (drop (posX+1) row)
+  where newCoords = Coords { x = posX, y = posY }
+
+setCoords :: Tile -> Coords -> Tile
+setCoords t newCoords = Tile { content = (content t), coords = newCoords}
 
 parseContent :: Char -> TileContent
 parseContent 'O' = R
@@ -125,3 +131,37 @@ countRocks row = length $ filter (\c -> (content c) == R) row
 answerQuestionDayFourteen :: String -> Int
 answerQuestionDayFourteen inputText = computeLoad $ moveAllRocks N g
   where g = parseGrid inputText
+
+cycleGrid :: Grid -> Grid
+cycleGrid g = moveAllRocks E $ moveAllRocks S $ moveAllRocks W $ moveAllRocks N g
+
+answerQuestionDayFourteen' :: String -> Int
+answerQuestionDayFourteen' inputText = computeLoad $ last $ take 1000000000 $ iterate (\g -> cycleGrid g) grid
+  where grid = parseGrid inputText
+
+listCycles :: Grid -> Int -> [(Int, Int)]
+listCycles grid n = listWithIndex $ map (\g -> computeLoad g) $ take n $ iterate (\g -> cycleGrid g) grid
+
+filterCycleModZeroWith :: [(Int, Int)] -> Int -> [(Int, Int)]
+filterCycleModZeroWith indexedResult n = filter (\p -> (== 0) $ mod n ((+1) $ fst p)) $ tail indexedResult
+
+data CycleResult = CycleResult { value :: Int, freq :: Int, loops :: [Int]} deriving (Show, Eq)
+type CycleResultMap = Map Int CycleResult
+
+addToMap :: (Int, Int) -> CycleResultMap -> CycleResultMap
+addToMap x crm =
+  case maybeEntry of
+    Nothing -> Map.insert v (CycleResult { value = v, freq = 1, loops = [l]}) crm
+    Just entry -> Map.insert v (CycleResult { value = v, freq = (freq entry) + 1, loops = (l:(loops entry))}) crm
+  where l = fst x
+        v = snd x
+        maybeEntry = Map.lookup v crm
+
+initCrm :: CycleResultMap
+initCrm = Map.fromList []
+
+getMostFrequentResult :: [(Int, Int)] -> CycleResultMap -> CycleResultMap
+getMostFrequentResult [] acc = acc
+getMostFrequentResult (x:xs) acc = do
+      let newAcc = addToMap x acc
+      getMostFrequentResult xs newAcc
