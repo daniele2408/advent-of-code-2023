@@ -106,3 +106,6 @@ generateUniquePairs :: [a] -> [(a, a)] -> [(a, a)]
 generateUniquePairs [] acc = acc
 generateUniquePairs (x:xs) acc = generateUniquePairs xs (combos ++ acc)
   where combos = map (\e -> (x,e)) xs
+
+takeStringButLastChar :: String -> String
+takeStringButLastChar s = reverse $ tail $ reverse s

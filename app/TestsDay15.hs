@@ -19,3 +19,8 @@ testAnswer = TestCase(do
         inputText <- readFile "./resources/inputday15.txt"
         assertEqual "" 514639 (answerQuestionDay15 inputText)
   )
+
+testAnswerSample' = TestCase(do
+        inputText <- readFile "./resources/sample/inputday15.txt"
+        assertEqual "" 145 (answerQuestionDay15' inputText)
+  )
